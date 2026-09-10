@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Anteneh AI Studio — turn an idea into an educational video storyboard.">
+  <title>Anteneh AI Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Anteneh AI Studio home">
+      <span class="brand-mark">A</span>
+      <span>Anteneh AI Studio</span>
+    </a>
+    <span class="status"><i></i> Studio ready</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">AI VIDEO WORKSPACE</div>
+      <h1>Turn an idea into an educational video.</h1>
+      <p>Start with a topic or rough idea. Anteneh AI Studio turns it into a clear, editable storyboard ready for the next generation steps.</p>
+    </section>
+
+    <section class="workspace" aria-label="Create video project">
+      <div class="panel create-panel">
+        <div class="panel-head">
+          <div>
+            <span class="step">01</span>
+            <h2>Create a project</h2>
+          </div>
+          <span class="badge">Mobile first</span>
+        </div>
+        <label for="prompt">What should the video explain?</label>
+        <textarea id="prompt" rows="6" placeholder="Example: Explain photosynthesis to a 10-year-old using simple examples."></textarea>
+        <div class="field-grid">
+          <div>
+            <label for="length">Length</label>
+            <select id="length">
+              <option value="60 sec">60 seconds</option>
+              <option value="90 sec">90 seconds</option>
+              <option value="2 min">2 minutes</option>
+              <option value="5 min">5 minutes</option>
+            </select>
+          </div>
+          <div>
+            <label for="style">Visual style</label>
+            <select id="style">
+              <option>Clean explainer</option>
+              <option>Whiteboard</option>
+              <option>Modern presentation</option>
+              <option>Minimal motion graphics</option>
+            </select>
+          </div>
+        </div>
+        <button id="createBtn" class="primary" type="button">Create project <span>→</span></button>
+        <p id="formNote" class="form-note">Your project will begin as an editable storyboard. Video generation will plug into this workflow next.</p>
+      </div>
+
+      <div class="panel storyboard-panel">
+        <div class="panel-head">
+          <div>
+            <span class="step">02</span>
+            <h2>Storyboard</h2>
+          </div>
+          <span id="projectState" class="state">Draft</span>
+        </div>
+        <div class="story-list">
+          <article class="scene active">
+            <span class="scene-num">01</span>
+            <div><strong>Hook</strong><p>Open with a simple question that makes the topic interesting.</p></div>
+          </article>
+          <article class="scene">
+            <span class="scene-num">02</span>
+            <div><strong>Core idea</strong><p>Break the concept into short, easy-to-follow explanations.</p></div>
+          </article>
+          <article class="scene">
+            <span class="scene-num">03</span>
+            <div><strong>Visual example</strong><p>Show an example or diagram that reinforces the lesson.</p></div>
+          </article>
+          <article class="scene">
+            <span class="scene-num">04</span>
+            <div><strong>Recap</strong><p>End with the key takeaway and a memorable summary.</p></div>
+          </article>
+        </div>
+        <div class="pipeline">
+          <span>Script</span><b>→</b><span>Visuals</span><b>→</b><span>Voice</span><b>→</b><span>Captions</span><b>→</b><span>MP4</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <article><span>✦</span><h3>Script-first</h3><p>Build the lesson before spending time on visuals.</p></article>
+      <article><span>▦</span><h3>Scene planning</h3><p>Keep every visual and explanation organized.</p></article>
+      <article><span>◉</span><h3>Voice & captions</h3><p>Designed for narration, subtitles, and accessible learning.</p></article>
+    </section>
+  </main>
+
+  <footer>ANTENEH AI STUDIO <span>•</span> Educational video creation workspace</footer>
+  <script src="app.js"></script>
+</body>
+</html>
