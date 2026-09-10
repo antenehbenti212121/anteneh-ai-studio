@@ -38,15 +38,16 @@
     </section>
     <section class="video-panel panel" aria-label="Video generator">
       <div class="panel-head"><div><span class="step">04</span><h2>Render video</h2></div><span class="badge">Runs on device</span></div>
-      <p class="video-help">Turn your current storyboard into a real animated video. If you recorded narration, the audio track is mixed into the video. Captions are drawn into the video frames.</p>
+      <p class="video-help">Turn your current storyboard into a real animated video. If you recorded narration, the audio track is mixed into the video. Captions are drawn into the video frames. Scene timing is automatically estimated from narration length.</p>
       <button id="videoBtn" class="primary" type="button">Generate video <span>▶</span></button>
       <div id="videoStatus" class="video-status" aria-live="polite">Ready to render.</div>
       <video id="videoPreview" class="video-preview" controls playsinline hidden></video>
       <a id="downloadVideo" class="download-video" hidden>Download video</a>
     </section>
-    <section class="features"><article><span>✦</span><h3>Free-first</h3><p>No API key or paid AI service is required for the current workflow.</p></article><article><span>▦</span><h3>Editable scenes</h3><p>Generate a structured lesson, then edit the text directly on your phone.</p></article><article><span>↓</span><h3>Real video</h3><p>Render an actual browser-recorded video with captions and optional narration.</p></article></section>
+    <section class="features"><article><span>✦</span><h3>Free-first</h3><p>No API key or paid AI service is required for the current workflow.</p></article><article><span>▦</span><h3>Editable scenes</h3><p>Generate a structured lesson, then edit the text directly on your phone.</p></article><article><span>↓</span><h3>Real video</h3><p>Render an actual browser-recorded video with captions, automatic timing, and optional narration.</p></article></section>
   </main>
   <footer>ANTENEH AI STUDIO <span>•</span> Educational video creation workspace</footer>
   <script src="app.js"></script>
+  <script src="video-engine.js"></script>
 </body>
 </html>
