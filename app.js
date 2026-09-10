@@ -30,18 +30,68 @@ function escapeHtml(value) {
 }
 
 function buildFreeStoryboard(topic, videoLength, visualStyle) {
-  const title = topic.length > 70 ? topic.slice(0, 70) + '…' : topic;
+  const cleanTopic = topic.replace(/\s+/g, ' ').trim();
+  const title = cleanTopic.length > 70 ? cleanTopic.slice(0, 70) + '…' : cleanTopic;
   const count = videoLength === '5 min' ? 7 : videoLength === '2 min' ? 6 : 5;
-  const templates = [
-    ['Hook', `Why does ${topic} matter? Start with a simple question or surprising fact.`, `Opening title card for “${title}”.`],
-    ['The big idea', `Introduce ${topic} in clear, simple language and explain the main idea.`, `Clean ${visualStyle.toLowerCase()} showing the central concept.`],
-    ['How it works', `Break ${topic} into its most important steps or parts so the viewer can follow easily.`, 'Simple diagram or step-by-step visual.'],
-    ['Example', `Give a practical example that helps the viewer understand the idea of ${topic}.`, 'Relatable real-world example with short labels.'],
-    ['Key takeaway', `Summarize the most useful point the viewer should remember about ${topic}.`, 'Three concise takeaway cards.'],
-    ['Quick recap', `Review the main points from the lesson in a few short sentences.`, 'Animated recap with the main keywords.'],
-    ['Closing', `End with one memorable sentence that encourages the viewer to keep learning.`, 'Clean end card with the lesson title.']
-  ];
-  return { title, hook: templates[0][1], scenes: templates.slice(1, count - 1).map(([title, narration, visual]) => ({ title, narration, visual })), recap: templates[count - 1][1] };
+  const lower = cleanTopic.toLowerCase();
+  const kind = /how to|tutorial|learn|make|build|use|install|steps?|guide/.test(lower) ? 'howto' : /why|cause|effect|impact|problem|climate|pollution|history|war|revolution/.test(lower) ? 'cause' : /math|equation|algebra|geometry|fraction|physics|chemistry|biology|photosynthesis|science/.test(lower) ? 'science' : /compare|difference|versus|vs\b|better|pros|cons/.test(lower) ? 'compare' : 'concept';
+  const visual = visualStyle.toLowerCase();
+
+  const sets = {
+    howto: [
+      ['Hook', `What are we trying to accomplish with ${cleanTopic}? Start with the result the viewer wants.`, `Show the finished result, then reveal the lesson title.`],
+      ['What you need', `Introduce the key tools, ideas, or information needed before starting ${cleanTopic}.`, `Animated checklist of the essential items or ideas.`],
+      ['Step by step', `Walk through the most important steps of ${cleanTopic} in the correct order.`, `Numbered process diagram with one step highlighted at a time.`],
+      ['Common mistake', `Point out one mistake beginners can make with ${cleanTopic} and explain how to avoid it.`, `Before-and-after comparison showing the mistake and the fix.`],
+      ['Example', `Show a short practical example of ${cleanTopic} so the viewer can see how the method works.`, `Example card with inputs on the left and result on the right.`],
+      ['Recap', `Review the steps for ${cleanTopic} in a compact sequence the viewer can remember.`, `Animated 1-2-3 recap timeline.`],
+      ['Closing', `End with one simple action the viewer can take to practice ${cleanTopic}.`, `Clean challenge card: try it yourself.`]
+    ],
+    cause: [
+      ['Hook', `What is the surprising question behind ${cleanTopic}? Open with the problem or mystery.`, `Large question card with a subtle animated reveal.`],
+      ['What is happening?', `Define ${cleanTopic} in plain language before explaining why it happens.`, `Simple concept map with the main idea in the center.`],
+      ['Causes', `Break down the main causes or forces connected to ${cleanTopic}.`, `Three connected cause cards flowing toward one outcome.`],
+      ['Effects', `Explain the most important effects of ${cleanTopic} and who or what they affect.`, `Cause-to-effect arrows with highlighted outcomes.`],
+      ['Example', `Use one concrete example to make ${cleanTopic} easier to understand.`, `Timeline or before-and-after example.`],
+      ['Key takeaway', `Summarize the main relationship between causes, effects, and the lesson's central idea.`, `Three takeaway cards connected by arrows.`],
+      ['Closing', `Finish with one memorable sentence that captures the lesson about ${cleanTopic}.`, `Minimal final statement with the key phrase emphasized.`]
+    ],
+    science: [
+      ['Hook', `Ask a simple question: what happens when we look closely at ${cleanTopic}?`, `Question card followed by a zoom-in animation.`],
+      ['Core idea', `Define ${cleanTopic} using everyday language before introducing technical terms.`, `Central concept card with two plain-language labels.`],
+      ['How it works', `Explain the process of ${cleanTopic} from beginning to end in clear stages.`, `Animated process diagram with numbered stages.`],
+      ['Example', `Connect ${cleanTopic} to something the viewer can observe in real life.`, `Real-world example card with a labeled illustration.`],
+      ['Why it matters', `Explain why understanding ${cleanTopic} is useful and what it helps us predict or do.`, `Three benefit cards appearing one by one.`],
+      ['Recap', `Repeat the three most important facts about ${cleanTopic} in simple language.`, `Three-point recap with animated check marks.`],
+      ['Closing', `End with one curiosity question that encourages the viewer to explore ${cleanTopic} further.`, `Curiosity card with a clean question reveal.`]
+    ],
+    compare: [
+      ['Hook', `What is the key difference we need to understand about ${cleanTopic}?`, `Split-screen comparison with two labeled sides.`],
+      ['Option A', `Explain the first side of the comparison in simple terms, including its main strengths.`, `Focused card for the first option with three labels.`],
+      ['Option B', `Explain the second side in the same clear structure so the comparison is fair.`, `Matching card for the second option.`],
+      ['Side by side', `Compare the most important features of ${cleanTopic} directly.`, `Animated comparison table with rows appearing one at a time.`],
+      ['Best fit', `Explain when one option may make more sense than the other, depending on the goal.`, `Decision path with two simple branches.`],
+      ['Takeaway', `Summarize the biggest difference and the situation where each option fits best.`, `Two-column takeaway card.`],
+      ['Closing', `End with a short decision rule the viewer can remember.`, `One-sentence rule on a clean final card.`]
+    ],
+    concept: [
+      ['Hook', `Why should we care about ${cleanTopic}? Start with a simple question or surprising idea.`, `Opening question card with the lesson title.`],
+      ['Core idea', `Introduce ${cleanTopic} in clear, simple language and define the central idea.`, `Central concept card with supporting labels.`],
+      ['How it works', `Break ${cleanTopic} into its most important parts or steps so the viewer can follow easily.`, `Simple diagram or step-by-step visual.`],
+      ['Example', `Give a practical example that makes ${cleanTopic} easier to understand.`, `Relatable real-world example with short labels.`],
+      ['Why it matters', `Explain where ${cleanTopic} appears in real life and why the idea is useful.`, `Three use-case cards with gentle motion.`],
+      ['Recap', `Review the main points from the lesson in a few short sentences.`, `Animated recap with the main keywords.`],
+      ['Closing', `End with one memorable sentence that encourages the viewer to keep learning about ${cleanTopic}.`, `Clean end card with the lesson title.`]
+    ]
+  };
+
+  const templates = sets[kind].map(([sceneTitle, narration, sceneVisual]) => [sceneTitle, narration, `${sceneVisual} Style: ${visual}.`]);
+  return {
+    title,
+    hook: templates[0][1],
+    scenes: templates.slice(1, count - 1).map(([sceneTitle, narration, sceneVisual]) => ({ title: sceneTitle, narration, visual: sceneVisual })),
+    recap: templates[count - 1][1]
+  };
 }
 
 function renderScript(script) {
