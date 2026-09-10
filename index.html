@@ -28,15 +28,22 @@
         <div class="pipeline"><span>Script</span><b>→</b><span>Visuals</span><b>→</b><span>Voice</span><b>→</b><span>Captions</span><b>→</b><span>Video</span></div>
       </div>
     </section>
+    <section class="voice-panel panel" aria-label="Voice preview">
+      <div class="panel-head"><div><span class="step">03</span><h2>Voice preview</h2></div><span class="badge">Free browser voice</span></div>
+      <p class="video-help">Preview the selected scene with a voice already available on your device. The browser Speech Synthesis API is used locally; the voice is not uploaded to a paid service.</p>
+      <div class="voice-grid"><div><label for="voiceSelect">Voice</label><select id="voiceSelect"><option>Loading device voices…</option></select></div><div><label for="voiceRate">Speed</label><select id="voiceRate"><option value="0.85">Slower</option><option value="1" selected>Normal</option><option value="1.15">Faster</option></select></div></div>
+      <div class="story-actions voice-actions"><button id="speakBtn" type="button">▶ Speak active scene</button><button id="stopSpeakBtn" type="button">■ Stop</button></div>
+      <div id="voiceStatus" class="video-status" aria-live="polite">Select a scene to preview its narration.</div>
+    </section>
     <section class="video-panel panel" aria-label="Video generator">
-      <div class="panel-head"><div><span class="step">03</span><h2>Render video</h2></div><span class="badge">Runs on device</span></div>
-      <p class="video-help">Turn your current storyboard into a real animated video. This first renderer uses canvas animation and browser recording, so it needs no API key or server.</p>
+      <div class="panel-head"><div><span class="step">04</span><h2>Render video</h2></div><span class="badge">Runs on device</span></div>
+      <p class="video-help">Turn your current storyboard into a real animated video. Captions are drawn into the video frames. This renderer uses canvas animation and browser recording, so it needs no API key or server.</p>
       <button id="videoBtn" class="primary" type="button">Generate video <span>▶</span></button>
       <div id="videoStatus" class="video-status" aria-live="polite">Ready to render.</div>
       <video id="videoPreview" class="video-preview" controls playsinline hidden></video>
       <a id="downloadVideo" class="download-video" hidden>Download video</a>
     </section>
-    <section class="features"><article><span>✦</span><h3>Free-first</h3><p>No API key or paid AI service is required for the current workflow.</p></article><article><span>▦</span><h3>Editable scenes</h3><p>Generate a structured lesson, then edit the text directly on your phone.</p></article><article><span>↓</span><h3>Real video</h3><p>Render an actual browser-recorded video from your storyboard.</p></article></section>
+    <section class="features"><article><span>✦</span><h3>Free-first</h3><p>No API key or paid AI service is required for the current workflow.</p></article><article><span>▦</span><h3>Editable scenes</h3><p>Generate a structured lesson, then edit the text directly on your phone.</p></article><article><span>↓</span><h3>Real video</h3><p>Render an actual browser-recorded video with built-in captions.</p></article></section>
   </main>
   <footer>ANTENEH AI STUDIO <span>•</span> Educational video creation workspace</footer>
   <script src="app.js"></script>
