@@ -38,13 +38,13 @@
     </section>
     <section class="video-panel panel" aria-label="Video generator">
       <div class="panel-head"><div><span class="step">04</span><h2>Render video</h2></div><span class="badge">Runs on device</span></div>
-      <p class="video-help">Create an explainer, presentation, or whiteboard lesson. Recorded narration controls scene timing when available, while topic-aware diagrams, captions, transitions, and educational layouts are rendered locally.</p>
+      <p class="video-help">Create a real video file from your storyboard. The renderer uses the selected lesson style, topic-aware educational diagrams, scene timing, and recorded narration when available.</p>
       <button id="videoBtn" class="primary" type="button">Generate video <span>▶</span></button>
       <div id="videoStatus" class="video-status" aria-live="polite">Ready to render.</div>
       <video id="videoPreview" class="video-preview" controls playsinline hidden></video>
       <a id="downloadVideo" class="download-video" hidden>Download video</a>
     </section>
-    <section class="features"><article><span>✦</span><h3>Explainer presentations</h3><p>Topic-aware slides, diagrams, captions, examples, comparisons, processes, and recaps.</p></article><article><span>▦</span><h3>Whiteboard lessons</h3><p>Switch to a clean whiteboard style with hand-drawn-style educational diagrams.</p></article><article><span>↓</span><h3>Voiceover tutorials</h3><p>Preview device voices or record narration, then synchronize the video to the narration length.</p></article></section>
+    <section class="features"><article><span>✦</span><h3>Explainer presentations</h3><p>Topic-aware slides, diagrams, captions, examples, comparisons, processes, and recaps.</p></article><article><span>▦</span><h3>Whiteboard lessons</h3><p>Switch to a clean whiteboard style with educational diagrams.</p></article><article><span>↓</span><h3>Voiceover tutorials</h3><p>Preview device voices or record narration, then synchronize the video to the narration length.</p></article></section>
   </main>
   <footer>ANTENEH AI STUDIO <span>•</span> Educational video creation workspace</footer>
   <script src="app.js"></script>
@@ -55,5 +55,6 @@
   <script src="advanced-video-engine.js"></script>
   <script src="style-renderer.js"></script>
   <script src="studio-polish.js"></script>
+  <script src="production-video-engine.js"></script>
 </body>
 </html>
