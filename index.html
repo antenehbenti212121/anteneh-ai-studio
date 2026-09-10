@@ -11,13 +11,13 @@
 <body>
   <header class="topbar"><a class="brand" href="./" aria-label="Anteneh AI Studio home"><span class="brand-mark">A</span><span>Anteneh AI Studio</span></a><span class="status"><i></i> Studio ready</span></header>
   <main>
-    <section class="hero"><div class="eyebrow">AI VIDEO WORKSPACE</div><h1>Turn an idea into an educational video.</h1><p>Start with a topic or rough idea. Build a clear, editable storyboard and render a real video directly on your device — with no API key or paid AI service.</p></section>
+    <section class="hero"><div class="eyebrow">AI VIDEO WORKSPACE</div><h1>Turn an idea into an educational video.</h1><p>Build script-to-video explainers, whiteboard lessons, and voiceover-driven tutorials directly on your device — with no API key or paid AI service.</p></section>
     <section class="workspace" aria-label="Create video project">
       <div class="panel create-panel">
         <div class="panel-head"><div><span class="step">01</span><h2>Create a project</h2></div><span class="badge">$0 workflow</span></div>
         <label for="prompt">What should the video explain?</label>
         <textarea id="prompt" rows="6" placeholder="Example: Explain photosynthesis to a 10-year-old using simple examples."></textarea>
-        <div class="field-grid"><div><label for="length">Length</label><select id="length"><option value="60 sec">60 seconds</option><option value="90 sec">90 seconds</option><option value="2 min">2 minutes</option><option value="5 min">5 minutes</option></select></div><div><label for="style">Visual style</label><select id="style"><option>Clean explainer</option><option>Whiteboard</option><option>Modern presentation</option><option>Minimal motion graphics</option></select></div></div>
+        <div class="field-grid"><div><label for="length">Length</label><select id="length"><option value="60 sec">60 seconds</option><option value="90 sec">90 seconds</option><option value="2 min">2 minutes</option><option value="5 min">5 minutes</option></select></div><div><label for="style">Lesson style</label><select id="style"><option>Clean explainer</option><option>Whiteboard</option><option>Modern presentation</option><option>Minimal motion graphics</option></select></div></div>
         <button id="createBtn" class="primary" type="button">Create project <span>→</span></button>
         <p id="formNote" class="form-note">Everything at this stage runs in your browser. Nothing is sent to a paid AI API.</p>
       </div>
@@ -48,6 +48,7 @@
   </main>
   <footer>ANTENEH AI STUDIO <span>•</span> Educational video creation workspace</footer>
   <script src="app.js"></script>
+  <script src="education-modes.js"></script>
   <script src="visual-intelligence.js"></script>
   <script src="video-engine.js"></script>
   <script src="topic-visuals.js"></script>
