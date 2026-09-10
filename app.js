@@ -27,19 +27,28 @@ function buildFreeStoryboard(topic, videoLength, visualStyle) {
 
 function renderScript(script) {
   const items = [{ title:'Hook', narration:script.hook, visual:'Opening hook: ' + script.title }, ...(script.scenes || []), { title:'Recap', narration:script.recap, visual:'Simple recap card showing the key takeaway.' }];
-  storyList.innerHTML = items.map((scene,index) => `<article class="scene${index===0?' active':''}"><span class="scene-num">${String(index+1).padStart(2,'0')}</span><div class="scene-content" contenteditable="true" spellcheck="true"><strong>${escapeHtml(scene.title)}</strong><p>${escapeHtml(scene.narration)}</p><small>${escapeHtml(scene.visual)}</small></div></article>`).join('');
+  storyList.innerHTML = items.map((scene,index) => `<article class="scene${index===0?' active':''}"><span class="scene-num">${String(index+1).padStart(2,'0')}</span><div class="scene-content"><input class="scene-title" value="${escapeHtml(scene.title)}" aria-label="Scene title"><textarea class="scene-narration" aria-label="Scene narration">${escapeHtml(scene.narration)}</textarea><input class="scene-visual" value="${escapeHtml(scene.visual)}" aria-label="Visual direction"></div></article>`).join('');
   document.querySelectorAll('.scene').forEach(scene => scene.addEventListener('click', () => { document.querySelectorAll('.scene').forEach(item=>item.classList.remove('active')); scene.classList.add('active'); }));
   localStorage.setItem('anteneh-ai-studio-project', JSON.stringify({topic:prompt.value.trim(), length:length.value, style:style.value, script}));
 }
 
+function collectScenes() {
+  return [...document.querySelectorAll('.scene')].map((scene,index) => ({
+    title: scene.querySelector('.scene-title')?.value || `Scene ${index+1}`,
+    narration: scene.querySelector('.scene-narration')?.value || '',
+    visual: scene.querySelector('.scene-visual')?.value || ''
+  }));
+}
+
+function saveProject(message = 'Project saved on this device.') {
+  const scenes = collectScenes();
+  localStorage.setItem('anteneh-ai-studio-project', JSON.stringify({ topic: prompt.value.trim(), length: length.value, style: style.value, scenes }));
+  formNote.textContent = message;
+}
+
 function exportProject() {
-  const text = [...document.querySelectorAll('.scene')].map((scene,index) => {
-    const title=scene.querySelector('strong')?.textContent || `Scene ${index+1}`;
-    const narration=scene.querySelector('p')?.textContent || '';
-    const visual=scene.querySelector('small')?.textContent || '';
-    return `${String(index+1).padStart(2,'0')}. ${title}\nNarration: ${narration}\nVisual: ${visual}`;
-  }).join('\n\n');
-  const blob=new Blob([`ANTENEH AI STUDIO\n${prompt.value.trim()}\n\n${text}`],{type:'text/plain;charset=utf-8'});
+  const text = collectScenes().map((scene,index) => `${String(index+1).padStart(2,'0')}. ${scene.title}\nNarration: ${scene.narration}\nVisual: ${scene.visual}`).join('\n\n');
+  const blob=new Blob([`ANTENEH AI STUDIO\n${prompt.value.trim()}\nLength: ${length.value}\nStyle: ${style.value}\n\n${text}`],{type:'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download='anteneh-ai-studio-storyboard.txt'; link.click(); URL.revokeObjectURL(url);
 }
 
@@ -48,8 +57,8 @@ createBtn.addEventListener('click', () => {
   if(!topic){prompt.focus();formNote.textContent='Add a topic or idea first, then create your project.';return;}
   createBtn.disabled=true; createBtn.innerHTML='Building storyboard <span>…</span>'; projectState.textContent='Creating';
   formNote.textContent='Creating your educational storyboard locally — no API key or paid service is used.';
-  setTimeout(()=>{renderScript(buildFreeStoryboard(topic,length.value,style.value));projectState.textContent='Storyboard ready';formNote.textContent=`Free storyboard created for “${topic.slice(0,72)}${topic.length>72?'…':''}”. You can edit the scene text directly.`;createBtn.innerHTML='Generate again <span>↻</span>';createBtn.disabled=false;},350);
+  setTimeout(()=>{renderScript(buildFreeStoryboard(topic,length.value,style.value));projectState.textContent='Storyboard ready';formNote.textContent=`Free storyboard created for “${topic.slice(0,72)}${topic.length>72?'…':''}”. Edit any scene, then save it on your device.`;createBtn.innerHTML='Generate again <span>↻</span>';createBtn.disabled=false;},350);
 });
 
 document.getElementById('exportBtn')?.addEventListener('click', exportProject);
-document.getElementById('saveBtn')?.addEventListener('click', () => { localStorage.setItem('anteneh-ai-studio-last-edit', storyList.innerHTML); formNote.textContent='Project saved on this device.'; });
+document.getElementById('saveBtn')?.addEventListener('click', () => saveProject());
