@@ -9,7 +9,13 @@ const videoBtn = document.getElementById('videoBtn');
 const videoStatus = document.getElementById('videoStatus');
 const videoPreview = document.getElementById('videoPreview');
 const downloadVideo = document.getElementById('downloadVideo');
+const voiceSelect = document.getElementById('voiceSelect');
+const voiceRate = document.getElementById('voiceRate');
+const speakBtn = document.getElementById('speakBtn');
+const stopSpeakBtn = document.getElementById('stopSpeakBtn');
+const voiceStatus = document.getElementById('voiceStatus');
 let currentVideoUrl = null;
+let deviceVoices = [];
 
 function escapeHtml(value) {
   return String(value || '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
@@ -33,8 +39,16 @@ function buildFreeStoryboard(topic, videoLength, visualStyle) {
 function renderScript(script) {
   const items = [{ title:'Hook', narration:script.hook, visual:'Opening hook: ' + script.title }, ...(script.scenes || []), { title:'Recap', narration:script.recap, visual:'Simple recap card showing the key takeaway.' }];
   storyList.innerHTML = items.map((scene,index) => `<article class="scene${index===0?' active':''}"><span class="scene-num">${String(index+1).padStart(2,'0')}</span><div class="scene-content"><input class="scene-title" value="${escapeHtml(scene.title)}" aria-label="Scene title"><textarea class="scene-narration" aria-label="Scene narration">${escapeHtml(scene.narration)}</textarea><input class="scene-visual" value="${escapeHtml(scene.visual)}" aria-label="Visual direction"></div></article>`).join('');
-  document.querySelectorAll('.scene').forEach(scene => scene.addEventListener('click', () => { document.querySelectorAll('.scene').forEach(item=>item.classList.remove('active')); scene.classList.add('active'); }));
+  bindSceneSelection();
   localStorage.setItem('anteneh-ai-studio-project', JSON.stringify({topic:prompt.value.trim(), length:length.value, style:style.value, script}));
+}
+
+function bindSceneSelection() {
+  document.querySelectorAll('.scene').forEach(scene => scene.addEventListener('click', () => {
+    document.querySelectorAll('.scene').forEach(item=>item.classList.remove('active'));
+    scene.classList.add('active');
+    voiceStatus.textContent = 'Active scene selected. Press “Speak active scene” to preview it.';
+  }));
 }
 
 function collectScenes() {
@@ -105,6 +119,35 @@ async function generateVideo() {
   const blob=new Blob(chunks,{type:mime||'video/webm'}); currentVideoUrl=URL.createObjectURL(blob); videoPreview.src=currentVideoUrl; videoPreview.hidden=false; videoPreview.load(); downloadVideo.href=currentVideoUrl; downloadVideo.download='anteneh-ai-studio-video.webm'; downloadVideo.textContent=`Download video (${Math.max(1,Math.round(blob.size/1024/1024*10)/10)} MB)`; downloadVideo.hidden=false; projectState.textContent='Video ready'; videoStatus.textContent='Video rendered successfully on this device. Format: WebM.'; videoBtn.disabled=false;
 }
 
+function populateVoices() {
+  if(!('speechSynthesis' in window) || !voiceSelect) return;
+  deviceVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang && voice.name);
+  if(!deviceVoices.length) return;
+  const english = deviceVoices.filter(voice => /^en(-|_)/i.test(voice.lang));
+  const voices = english.length ? english : deviceVoices;
+  voiceSelect.innerHTML = voices.map((voice,index) => `<option value="${index}">${escapeHtml(voice.name)} — ${escapeHtml(voice.lang)}</option>`).join('');
+  voiceSelect._voiceList = voices;
+  voiceStatus.textContent = `${voices.length} device voice${voices.length === 1 ? '' : 's'} available.`;
+}
+
+function speakActiveScene() {
+  if(!('speechSynthesis' in window)){voiceStatus.textContent='Speech synthesis is not available in this browser.';return;}
+  const active=document.querySelector('.scene.active');
+  const text=active?.querySelector('.scene-narration')?.value?.trim();
+  if(!text){voiceStatus.textContent='The active scene has no narration.';return;}
+  const voices=voiceSelect?._voiceList || deviceVoices;
+  window.speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(text);
+  const selected=voices[Number(voiceSelect?.value)];
+  if(selected) utterance.voice=selected;
+  utterance.rate=Number(voiceRate?.value || 1);
+  utterance.pitch=1;
+  utterance.onstart=()=>{voiceStatus.textContent='Speaking the active scene…';};
+  utterance.onend=()=>{voiceStatus.textContent='Voice preview finished.';};
+  utterance.onerror=()=>{voiceStatus.textContent='The device could not play this voice preview.';};
+  window.speechSynthesis.speak(utterance);
+}
+
 createBtn.addEventListener('click', () => {
   const topic=prompt.value.trim();
   if(!topic){prompt.focus();formNote.textContent='Add a topic or idea first, then create your project.';return;}
@@ -116,3 +159,7 @@ createBtn.addEventListener('click', () => {
 document.getElementById('exportBtn')?.addEventListener('click', exportProject);
 document.getElementById('saveBtn')?.addEventListener('click', () => saveProject());
 videoBtn?.addEventListener('click', generateVideo);
+speakBtn?.addEventListener('click', speakActiveScene);
+stopSpeakBtn?.addEventListener('click', () => { if('speechSynthesis' in window) window.speechSynthesis.cancel(); voiceStatus.textContent='Voice preview stopped.'; });
+if('speechSynthesis' in window){ populateVoices(); window.speechSynthesis.onvoiceschanged=populateVoices; }
+bindSceneSelection();
