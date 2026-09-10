@@ -5,7 +5,6 @@ const createBtn = document.getElementById('createBtn');
 const formNote = document.getElementById('formNote');
 const projectState = document.getElementById('projectState');
 const storyList = document.querySelector('.story-list');
-const scenes = () => document.querySelectorAll('.scene');
 
 function escapeHtml(value) {
   return String(value || '').replace(/[&<>'"]/g, char => ({
@@ -13,11 +12,32 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function buildFreeStoryboard(topic, videoLength, visualStyle) {
+  const title = topic.length > 70 ? topic.slice(0, 70) + '…' : topic;
+  const count = videoLength === '5 min' ? 7 : videoLength === '2 min' ? 6 : 5;
+  const templates = [
+    ['Hook', `Why does ${topic} matter? Start with a simple question or surprising fact.`, `Opening title card for “${title}”.`],
+    ['The big idea', `Introduce ${topic} in clear, simple language and explain the main idea.`, `Clean ${visualStyle.toLowerCase()} showing the central concept.`],
+    ['How it works', `Break the topic into its most important steps or parts so the viewer can follow easily.`, 'Simple diagram or step-by-step visual.'],
+    ['Example', `Give a practical example that helps the viewer understand ${topic in '' ? topic : 'the idea'}.`, 'Relatable real-world example with short labels.'],
+    ['Key takeaway', `Summarize the most useful point the viewer should remember about ${topic}.`, 'Three concise takeaway cards.'],
+    ['Quick recap', `Review the main points from the lesson in a few short sentences.`, 'Animated recap with the main keywords.'],
+    ['Closing', `End with one memorable sentence that encourages the viewer to keep learning.`, 'Clean end card with the lesson title.']
+  ];
+  return {
+    title,
+    hook: templates[0][1],
+    scenes: templates.slice(1, count - 1).map(([title, narration, visual]) => ({ title, narration, visual })),
+    recap: templates[count - 1][1]
+  };
+}
+
 function renderScript(script) {
-  const items = [];
-  items.push({ title: 'Hook', narration: script.hook, visual: 'Opening hook: ' + (script.title || 'Introduce the topic') });
-  (script.scenes || []).forEach(scene => items.push(scene));
-  items.push({ title: 'Recap', narration: script.recap, visual: 'Simple recap card showing the key takeaway.' });
+  const items = [
+    { title: 'Hook', narration: script.hook, visual: 'Opening hook: ' + script.title },
+    ...(script.scenes || []),
+    { title: 'Recap', narration: script.recap, visual: 'Simple recap card showing the key takeaway.' }
+  ];
 
   storyList.innerHTML = items.map((scene, index) => `
     <article class="scene${index === 0 ? ' active' : ''}">
@@ -38,7 +58,7 @@ function renderScript(script) {
   });
 }
 
-createBtn.addEventListener('click', async () => {
+createBtn.addEventListener('click', () => {
   const topic = prompt.value.trim();
   if (!topic) {
     prompt.focus();
@@ -47,30 +67,16 @@ createBtn.addEventListener('click', async () => {
   }
 
   createBtn.disabled = true;
-  createBtn.innerHTML = 'Generating script <span>…</span>';
-  projectState.textContent = 'Generating';
-  formNote.textContent = 'AI is turning your idea into a structured educational script…';
+  createBtn.innerHTML = 'Building storyboard <span>…</span>';
+  projectState.textContent = 'Creating';
+  formNote.textContent = 'Creating your educational storyboard with the free built-in planner…';
 
-  try {
-    const response = await fetch('/api/generate-script', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic, length: length.value, style: style.value })
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Script generation failed.');
-
-    renderScript(data.script);
-    projectState.textContent = 'Script ready';
-    projectState.style.color = '#68e0b0';
-    formNote.textContent = `AI script created for “${topic.slice(0, 72)}${topic.length > 72 ? '…' : ''}”. Review the scenes below.`;
+  setTimeout(() => {
+    const script = buildFreeStoryboard(topic, length.value, style.value);
+    renderScript(script);
+    projectState.textContent = 'Storyboard ready';
+    formNote.textContent = `Free storyboard created for “${topic.slice(0, 72)}${topic.length > 72 ? '…' : ''}”. No API key or paid service is required.`;
     createBtn.innerHTML = 'Generate again <span>↻</span>';
-  } catch (error) {
-    projectState.textContent = 'Needs setup';
-    formNote.textContent = error.message;
-    createBtn.innerHTML = 'Try again <span>↻</span>';
-  } finally {
     createBtn.disabled = false;
-  }
+  }, 350);
 });
