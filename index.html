@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Anteneh AI Studio — turn an idea into an educational video storyboard.">
+  <meta name="description" content="Anteneh AI Studio — turn an idea into an educational video storyboard and browser video.">
   <title>Anteneh AI Studio</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="./" aria-label="Anteneh AI Studio home"><span class="brand-mark">A</span><span>Anteneh AI Studio</span></a><span class="status"><i></i> Studio ready</span></header>
   <main>
-    <section class="hero"><div class="eyebrow">AI VIDEO WORKSPACE</div><h1>Turn an idea into an educational video.</h1><p>Start with a topic or rough idea. Build a clear, editable storyboard directly on your device — with no API key or paid AI service.</p></section>
+    <section class="hero"><div class="eyebrow">AI VIDEO WORKSPACE</div><h1>Turn an idea into an educational video.</h1><p>Start with a topic or rough idea. Build a clear, editable storyboard and render a real video directly on your device — with no API key or paid AI service.</p></section>
     <section class="workspace" aria-label="Create video project">
       <div class="panel create-panel">
         <div class="panel-head"><div><span class="step">01</span><h2>Create a project</h2></div><span class="badge">$0 workflow</span></div>
@@ -25,10 +25,18 @@
         <div class="panel-head"><div><span class="step">02</span><h2>Storyboard</h2></div><span id="projectState" class="state">Draft</span></div>
         <div class="story-actions"><button id="saveBtn" type="button">Save on device</button><button id="exportBtn" type="button">Export .txt</button></div>
         <div class="story-list"><article class="scene active"><span class="scene-num">01</span><div><strong>Hook</strong><p>Open with a simple question that makes the topic interesting.</p></div></article><article class="scene"><span class="scene-num">02</span><div><strong>Core idea</strong><p>Break the concept into short, easy-to-follow explanations.</p></div></article><article class="scene"><span class="scene-num">03</span><div><strong>Visual example</strong><p>Show an example or diagram that reinforces the lesson.</p></div></article><article class="scene"><span class="scene-num">04</span><div><strong>Recap</strong><p>End with the key takeaway and a memorable summary.</p></div></article></div>
-        <div class="pipeline"><span>Script</span><b>→</b><span>Visuals</span><b>→</b><span>Voice</span><b>→</b><span>Captions</span><b>→</b><span>MP4</span></div>
+        <div class="pipeline"><span>Script</span><b>→</b><span>Visuals</span><b>→</b><span>Voice</span><b>→</b><span>Captions</span><b>→</b><span>Video</span></div>
       </div>
     </section>
-    <section class="features"><article><span>✦</span><h3>Free-first</h3><p>No API key or paid AI service is required for the current workflow.</p></article><article><span>▦</span><h3>Editable scenes</h3><p>Generate a structured lesson, then edit the text directly on your phone.</p></article><article><span>↓</span><h3>Export ready</h3><p>Save the storyboard locally or export it as a simple text file.</p></article></section>
+    <section class="video-panel panel" aria-label="Video generator">
+      <div class="panel-head"><div><span class="step">03</span><h2>Render video</h2></div><span class="badge">Runs on device</span></div>
+      <p class="video-help">Turn your current storyboard into a real animated video. This first renderer uses canvas animation and browser recording, so it needs no API key or server.</p>
+      <button id="videoBtn" class="primary" type="button">Generate video <span>▶</span></button>
+      <div id="videoStatus" class="video-status" aria-live="polite">Ready to render.</div>
+      <video id="videoPreview" class="video-preview" controls playsinline hidden></video>
+      <a id="downloadVideo" class="download-video" hidden>Download video</a>
+    </section>
+    <section class="features"><article><span>✦</span><h3>Free-first</h3><p>No API key or paid AI service is required for the current workflow.</p></article><article><span>▦</span><h3>Editable scenes</h3><p>Generate a structured lesson, then edit the text directly on your phone.</p></article><article><span>↓</span><h3>Real video</h3><p>Render an actual browser-recorded video from your storyboard.</p></article></section>
   </main>
   <footer>ANTENEH AI STUDIO <span>•</span> Educational video creation workspace</footer>
   <script src="app.js"></script>
