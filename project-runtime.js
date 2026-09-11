@@ -3,130 +3,21 @@
   const length = document.getElementById('length');
   const style = document.getElementById('style');
   const storyList = document.querySelector('.story-list');
+  const createBtn = document.getElementById('createBtn');
   const videoBtn = document.getElementById('videoBtn');
   const formNote = document.getElementById('formNote');
   if (!prompt || !length || !style || !storyList || !videoBtn) return;
-
-  const esc = value => String(value || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const topicText = () => prompt.value.replace(/\s+/g, ' ').trim();
-
-  function buildStoryboard(topic, videoLength, visualStyle) {
-    const clean = topic.replace(/\s+/g, ' ').trim();
-    const lower = clean.toLowerCase();
-    const count = videoLength === '5 min' ? 7 : videoLength === '2 min' ? 6 : 5;
-    const kind = /how to|tutorial|learn|make|build|use|install|steps?|guide/.test(lower) ? 'howto'
-      : /why|cause|effect|impact|problem|climate|pollution|history|war|revolution|greenhouse/.test(lower) ? 'cause'
-      : /math|equation|algebra|geometry|fraction|physics|chemistry|biology|photosynthesis|science/.test(lower) ? 'science'
-      : /compare|difference|versus|vs\b|better|pros|cons/.test(lower) ? 'compare' : 'concept';
-    const sets = {
-      howto: [
-        ['Hook', `What are we trying to accomplish with ${clean}? Start with the result the viewer wants.`, `Show the finished result, then reveal the lesson title.`],
-        ['What you need', `Introduce the key tools, ideas, or information needed before starting ${clean}.`, `Animated checklist of the essential items or ideas.`],
-        ['Step by step', `Walk through the most important steps of ${clean} in the correct order.`, `Numbered process diagram with one step highlighted at a time.`],
-        ['Common mistake', `Point out one mistake beginners can make with ${clean} and explain how to avoid it.`, `Before-and-after comparison showing the mistake and the fix.`],
-        ['Example', `Show a short practical example of ${clean} so the viewer can see how the method works.`, `Example card with inputs on the left and result on the right.`],
-        ['Recap', `Review the steps for ${clean} in a compact sequence the viewer can remember.`, `Animated 1-2-3 recap timeline.`],
-        ['Closing', `End with one simple action the viewer can take to practice ${clean}.`, `Clean challenge card: try it yourself.`]
-      ],
-      cause: [
-        ['Hook', `What is the surprising question behind ${clean}? Open with the problem or mystery.`, `Large question card with a subtle animated reveal.`],
-        ['What is happening?', `Define ${clean} in plain language before explaining why it happens.`, `Simple concept map with the main idea in the center.`],
-        ['Causes', `Break down the main causes or forces connected to ${clean}.`, `Three connected cause cards flowing toward one outcome.`],
-        ['Effects', `Explain the most important effects of ${clean} and who or what they affect.`, `Cause-to-effect arrows with highlighted outcomes.`],
-        ['Example', `Use one concrete example to make ${clean} easier to understand.`, `Timeline or before-and-after example.`],
-        ['Key takeaway', `Summarize the main relationship between causes, effects, and the central idea of ${clean}.`, `Three takeaway cards connected by arrows.`],
-        ['Closing', `Finish with one memorable sentence that captures the lesson about ${clean}.`, `Minimal final statement with the key phrase emphasized.`]
-      ],
-      science: [
-        ['Hook', `Ask a simple question: what happens when we look closely at ${clean}?`, `Question card followed by a zoom-in animation.`],
-        ['Core idea', `Define ${clean} using everyday language before introducing technical terms.`, `Central concept card with two plain-language labels.`],
-        ['How it works', `Explain the process of ${clean} from beginning to end in clear stages.`, `Animated process diagram with numbered stages.`],
-        ['Example', `Connect ${clean} to something the viewer can observe in real life.`, `Real-world example card with a labeled illustration.`],
-        ['Why it matters', `Explain why understanding ${clean} is useful and what it helps us predict or do.`, `Three benefit cards appearing one by one.`],
-        ['Recap', `Repeat the three most important facts about ${clean} in simple language.`, `Three-point recap with animated check marks.`],
-        ['Closing', `End with one curiosity question that encourages the viewer to explore ${clean} further.`, `Curiosity card with a clean question reveal.`]
-      ],
-      compare: [
-        ['Hook', `What is the key difference we need to understand about ${clean}?`, `Split-screen comparison with two labeled sides.`],
-        ['Option A', `Explain the first side of ${clean} in simple terms, including its main strengths.`, `Focused card for the first option with three labels.`],
-        ['Option B', `Explain the second side in the same clear structure so the comparison is fair.`, `Matching card for the second option.`],
-        ['Side by side', `Compare the most important features of ${clean} directly.`, `Animated comparison table with rows appearing one at a time.`],
-        ['Best fit', `Explain when one option may make more sense than the other, depending on the goal.`, `Decision path with two simple branches.`],
-        ['Takeaway', `Summarize the biggest difference and the situation where each option fits best.`, `Two-column takeaway card.`],
-        ['Closing', `End with a short decision rule the viewer can remember.`, `One-sentence rule on a clean final card.`]
-      ],
-      concept: [
-        ['Hook', `Why should we care about ${clean}? Start with a simple question or surprising idea.`, `Opening question card with the lesson title.`],
-        ['Core idea', `Introduce ${clean} in clear, simple language and define the central idea.`, `Central concept card with supporting labels.`],
-        ['How it works', `Break ${clean} into its most important parts or steps so the viewer can follow easily.`, `Simple diagram or step-by-step visual.`],
-        ['Example', `Give a practical example that makes ${clean} easier to understand.`, `Relatable real-world example with short labels.`],
-        ['Why it matters', `Explain where ${clean} appears in real life and why the idea is useful.`, `Three use-case cards with gentle motion.`],
-        ['Recap', `Review the main points from the lesson in a few short sentences.`, `Animated recap with the main keywords.`],
-        ['Closing', `End with one memorable sentence that encourages the viewer to keep learning about ${clean}.`, `Clean end card with the lesson title.`]
-      ]
-    };
-    const chosen = sets[kind];
-    const selected = chosen.slice(0, count);
-    if (count < chosen.length) selected[count - 1] = chosen[chosen.length - 2];
-    return selected.map((item, i) => ({
-      title: item[0],
-      narration: item[1],
-      visual: `${item[2]} Style: ${visualStyle}. Topic: ${clean}.`
-    }));
-  }
-
-  function render(scenes) {
-    storyList.innerHTML = scenes.map((scene, i) => `<article class="scene${i === 0 ? ' active' : ''}"><span class="scene-num">${String(i + 1).padStart(2,'0')}</span><div class="scene-content"><input class="scene-title" value="${esc(scene.title)}" aria-label="Scene title"><textarea class="scene-narration" aria-label="Scene narration">${esc(scene.narration)}</textarea><input class="scene-visual" value="${esc(scene.visual)}" aria-label="Visual direction"></div></article>`).join('');
-    storyList.querySelectorAll('.scene').forEach(scene => scene.addEventListener('click', () => {
-      storyList.querySelectorAll('.scene').forEach(x => x.classList.remove('active'));
-      scene.classList.add('active');
-    }));
-    document.querySelectorAll('.scene-title,.scene-narration,.scene-visual').forEach(el => el.addEventListener('input', () => {
-      const data = collect();
-      localStorage.setItem('anteneh-ai-studio-project', JSON.stringify({topic:topicText(),length:length.value,style:style.value,scenes:data}));
-    }));
-  }
-
-  function collect() {
-    return [...storyList.querySelectorAll('.scene')].map((scene, i) => ({
-      title: scene.querySelector('.scene-title')?.value || `Scene ${i + 1}`,
-      narration: scene.querySelector('.scene-narration')?.value || '',
-      visual: scene.querySelector('.scene-visual')?.value || ''
-    }));
-  }
-
-  function isStarterStoryboard() {
-    const items = [...storyList.querySelectorAll('.scene')];
-    if (items.length === 0) return true;
-    const text = items.map(x => x.textContent || '').join(' ').toLowerCase();
-    return items.length <= 4 && /open with a simple question|break the concept into short|show an example or diagram|end with the key takeaway/.test(text);
-  }
-
-  function ensureLesson() {
-    const topic = topicText();
-    if (!topic) return false;
-    const savedRaw = localStorage.getItem('anteneh-ai-studio-project');
-    let saved = null;
-    try { saved = savedRaw ? JSON.parse(savedRaw) : null; } catch (_) {}
-    const current = collect();
-    const starter = isStarterStoryboard();
-    if (starter) {
-      if (saved?.scenes?.length && saved.topic === topic) render(saved.scenes);
-      else render(buildStoryboard(topic, length.value, style.value));
-      localStorage.setItem('anteneh-ai-studio-project', JSON.stringify({topic,length:length.value,style:style.value,scenes:collect()}));
-      if (formNote) formNote.textContent = 'Lesson storyboard synced to the video renderer.';
-      return true;
-    }
-    if (current.length) localStorage.setItem('anteneh-ai-studio-project', JSON.stringify({topic,length:length.value,style:style.value,scenes:current}));
-    return true;
-  }
-
-  document.addEventListener('click', event => {
-    if (event.target.closest('#videoBtn')) ensureLesson();
-  }, true);
-
-  prompt.addEventListener('input', () => {
-    if (isStarterStoryboard()) return;
-    formNote.textContent = 'Topic changed. Create project to generate a fresh lesson, or render your current storyboard.';
-  });
+  const esc = v => String(v ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+  const clean = v => String(v || '').replace(/\s+/g,' ').trim();
+  const words = v => clean(v).split(/\s+/).filter(Boolean);
+  const isFullScript = text => words(text).length > 35 || /scene\s*\d|narration:|scene title/i.test(text);
+  const extractTopic = text => { const s=clean(text); if(!isFullScript(s)) return s; const first=s.split(/\.|!|\?/).map(clean).find(x=>x.length>=8&&x.length<=100); return first||s.slice(0,90); };
+  const kindOf = topic => { const s=topic.toLowerCase(); if(/\b(how to|tutorial|learn|make|build|install|guide|steps?)\b/.test(s)) return 'howto'; if(/\b(why|cause|effect|impact|problem|climate|pollution|greenhouse|history|war|revolution)\b/.test(s)) return 'cause'; if(/\b(math|equation|algebra|geometry|fraction|physics|chemistry|biology|photosynthesis|science)\b/.test(s)) return 'science'; if(/\b(compare|comparison|difference|versus|vs|better|pros|cons)\b/.test(s)) return 'compare'; return 'concept'; };
+  const special = topic => { const s=topic.toLowerCase(); if(/greenhouse effect/.test(s)) return [['Hook','Why is Earth warm enough for life? One important reason is the greenhouse effect — a natural process that helps keep our planet at a livable temperature.','SUNLIGHT → EARTH → ATMOSPHERE: reveal a simple heat-balance diagram.'],['What it is','The greenhouse effect happens when certain gases in Earth’s atmosphere absorb and re-radiate some of the heat leaving the surface.','Heat leaving Earth meets greenhouse gases; show absorption and re-radiation.'],['How it works','First, sunlight warms Earth’s surface. The surface releases energy as heat. Some heat escapes to space, while greenhouse gases absorb and re-radiate part of it.','SUNLIGHT → WARM SURFACE → OUTGOING HEAT → ATMOSPHERE, with animated arrows.'],['Why it matters','The natural greenhouse effect is essential for life. Human activities have increased greenhouse gas concentrations, strengthening the warming effect and contributing to global warming.','Compare a natural heat balance with increased greenhouse-gas influence.'],['Recap','Remember: the greenhouse effect is natural, greenhouse gases help regulate Earth’s temperature, and human activity has increased their concentrations.','Three takeaway cards: NATURAL • HEAT BALANCE • HUMAN INFLUENCE.']]; if(/photosynthesis/.test(s)) return [['Hook','How can a plant turn sunlight into the chemical energy it needs to grow? The answer is photosynthesis.','SUNLIGHT meets a green leaf; reveal the lesson title.'],['Inputs','Plants use three key inputs: light energy, carbon dioxide from the air, and water absorbed by the roots.','LIGHT + CO₂ + WATER flow toward a leaf.'],['Process','Inside chloroplasts, light energy drives a process that transforms water and carbon dioxide into glucose, while oxygen is released.','LIGHT → LEAF → GLUCOSE + OXYGEN.'],['Example','A houseplant near a window demonstrates the idea: light provides energy while roots supply water and leaves exchange gases with the air.','Window + plant + roots + leaf gas exchange, with labeled arrows.'],['Recap','Photosynthesis captures light energy and stores it in glucose. It also releases oxygen, making the process essential to life on Earth.','Three takeaway cards: LIGHT • GLUCOSE • OXYGEN.']]; return null; };
+  const generic = (topic,kind) => ({howto:[['Hook',`What result do we want from ${topic}? Start with the outcome so the viewer knows where the lesson is going.`,`Show the finished result, then reveal the lesson title.`],['What you need',`Introduce the key ideas, tools, or information needed before starting ${topic}.`,`Animated checklist of essential items.`],['Steps',`Walk through the most important steps of ${topic} in the correct order.`,`Numbered process with one step highlighted at a time.`],['Common mistake',`Point out one common mistake related to ${topic} and explain the correction.`,`BEFORE → MISTAKE → CORRECTION.`],['Example',`Show a practical example of ${topic} so the viewer can connect the method to real life.`,`Inputs on the left, result on the right.`],['Recap',`Review the method for ${topic} in a compact sequence the viewer can remember.`,`Three-step recap timeline.`],['Closing',`End with one simple action the viewer can take to practice ${topic}.`,`Practice challenge end card.`]],cause:[['Hook',`What is the key question behind ${topic}? Start with the mystery or problem.`,`Large question card with a reveal.`],['Core idea',`Define ${topic} in plain language before introducing more detail.`,`Central concept with supporting labels.`],['Causes',`Explain the main causes or forces connected to ${topic}.`,`Three causes flow into a central event.`],['Effects',`Explain the most important effects of ${topic} and why they matter.`,`CAUSE → EVENT → EFFECT arrows.`],['Example',`Use one concrete example to make ${topic} easier to understand.`,`Real-world example with labeled parts.`],['Recap',`Summarize the key relationship between causes, effects, and the central idea of ${topic}.`,`Three takeaway cards.`],['Closing',`Finish with one memorable sentence that captures the lesson about ${topic}.`,`Clean final statement.`]],science:[['Hook',`What happens when we look closely at ${topic}? Start with a question the viewer can answer by the end.`,`Question card followed by zoom-in.`],['Core idea',`Define ${topic} using everyday language before adding technical terms.`,`Central concept card.`],['How it works',`Explain ${topic} from beginning to end in clear stages.`,`Animated numbered process.`],['Example',`Connect ${topic} to something the viewer can observe in real life.`,`Labeled real-world example.`],['Why it matters',`Explain why ${topic} is useful and what it helps us understand.`,`Three application cards.`],['Recap',`Repeat the three most important facts about ${topic}.`,`Three-point recap.`],['Closing',`End with a curiosity question that invites further learning about ${topic}.`,`Curiosity end card.`]],compare:[['Hook',`What is the key difference we need to understand about ${topic}?`,`Split-screen comparison.`],['Option A',`Explain the first side of ${topic} in simple terms.`,`Focused A card.`],['Option B',`Explain the second side of ${topic} in the same structure.`,`Focused B card.`],['Side by side',`Compare the most important features of ${topic} directly.`,`Animated comparison table.`],['Best fit',`Explain when each option makes more sense depending on the goal.`,`Two-branch decision path.`],['Takeaway',`Summarize the biggest difference and the best fit for each side.`,`Two-column takeaway.`],['Closing',`End with a short decision rule the viewer can remember.`,`One-sentence rule.`]],concept:[['Hook',`Why should we care about ${topic}? Start with a simple question or surprising idea.`,`Opening question card.`],['Core idea',`Introduce ${topic} in clear, simple language and define the central idea.`,`Central concept with three supporting ideas.`],['How it works',`Break ${topic} into its most important parts so the viewer can follow easily.`,`Step-by-step concept diagram.`],['Example',`Give a practical example that makes ${topic} easier to understand.`,`Relatable real-world example.`],['Why it matters',`Explain where ${topic} appears in real life and why it is useful.`,`Three use-case cards.`],['Recap',`Review the main points about ${topic} in a few short sentences.`,`Three-point recap.`],['Closing',`End with one memorable sentence that encourages the viewer to keep learning about ${topic}.`,`Clean end card.`]]})[kind];
+  function collect(){return [...storyList.querySelectorAll('.scene')].map((n,i)=>({title:n.querySelector('.scene-title')?.value||`Scene ${i+1}`,narration:n.querySelector('.scene-narration')?.value||'',visual:n.querySelector('.scene-visual')?.value||''}));}
+  function render(scenes){storyList.innerHTML=scenes.map((x,i)=>`<article class="scene${i===0?' active':''}"><span class="scene-num">${String(i+1).padStart(2,'0')}</span><div class="scene-content"><input class="scene-title" value="${esc(x.title)}" aria-label="Scene title"><textarea class="scene-narration" aria-label="Scene narration">${esc(x.narration)}</textarea><input class="scene-visual" value="${esc(x.visual)}" aria-label="Visual direction"></div></article>`).join('');storyList.querySelectorAll('.scene').forEach(n=>n.addEventListener('click',()=>{storyList.querySelectorAll('.scene').forEach(x=>x.classList.remove('active'));n.classList.add('active');}));}
+  function build(){const raw=clean(prompt.value);if(!raw)return false;const topic=extractTopic(raw);const pack=special(topic);const base=pack||generic(topic,kindOf(topic));const target=length.value==='5 min'?7:length.value==='2 min'?6:5;let chosen=base.slice(0,target);while(chosen.length<target) chosen.push(base[base.length-1]);const scenes=chosen.map(x=>({title:x[0],narration:x[1],visual:`${x[2]} Style: ${style.value}. Topic: ${topic}.`}));render(scenes);localStorage.setItem('anteneh-ai-studio-project',JSON.stringify({topic,length:length.value,style:style.value,scenes}));if(formNote)formNote.textContent=`Lesson ready: ${topic} • ${scenes.length} scenes synced to the renderer.`;return true;}
+  createBtn?.addEventListener('click',()=>setTimeout(build,0));
+  document.addEventListener('click',e=>{if(e.target.closest('#videoBtn')){const current=collect();if(!current.length||current.some(x=>/Open with a simple question|Break the concept|Show an example or diagram|End with the key takeaway/.test(x.narration))) build();}},true);
 })();
