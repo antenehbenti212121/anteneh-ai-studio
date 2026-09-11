@@ -5,6 +5,20 @@
   const list = document.querySelector('.story-list');
   if (!prompt || !length || !style || !list) return;
 
+  // The public UI has one Generate Video action, but the rendering engines
+  // still use the legacy videoBtn internally. Keep that control in the DOM,
+  // hidden from users, so every renderer remains compatible.
+  let videoBtn = document.getElementById('videoBtn');
+  if (!videoBtn) {
+    videoBtn = document.createElement('button');
+    videoBtn.id = 'videoBtn';
+    videoBtn.type = 'button';
+    videoBtn.textContent = 'Render video';
+    videoBtn.className = 'studio-hidden-control';
+    const output = document.getElementById('videoOutput');
+    (output || document.body).appendChild(videoBtn);
+  }
+
   const clean = v => String(v || '').replace(/\s+/g, ' ').trim();
   const esc = v => String(v ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const fullScript = text => clean(text).split(/\s+/).filter(Boolean).length > 35 || /scene\s*\d|narration:/i.test(text);
@@ -142,4 +156,30 @@
   },true);
   window.antenehEnsureLesson=()=>{const raw=clean(prompt.value);return raw && (placeholder() || list.dataset.lessonTopic !== topicFrom(raw) || list.dataset.lessonVersion !== '2') ? build() : true;};
   if(!placeholder()&&!list.dataset.lessonTopic) list.dataset.lessonTopic=topicFrom(prompt.value);
+})();
+
+// Reliable download fallback: if any renderer creates a blob URL for the
+// preview but forgets to expose the download link, expose it automatically.
+(() => {
+  const preview = document.getElementById('videoPreview');
+  const download = document.getElementById('downloadVideo');
+  const output = document.getElementById('videoOutput');
+  if (!preview || !download) return;
+
+  const syncDownload = () => {
+    const src = preview.currentSrc || preview.src || '';
+    if (!src || !/^blob:|^data:/.test(src)) return;
+    download.href = src;
+    download.download = 'anteneh-ai-studio-video.webm';
+    download.textContent = 'Download video';
+    download.hidden = false;
+    download.style.display = 'inline-flex';
+    if (output) output.classList.add('output-ready');
+  };
+
+  new MutationObserver(syncDownload).observe(preview, {attributes:true, attributeFilter:['src']});
+  preview.addEventListener('loadedmetadata', syncDownload);
+  preview.addEventListener('loadeddata', syncDownload);
+  window.addEventListener('antene:video-ready', syncDownload);
+  setInterval(syncDownload, 500);
 })();
