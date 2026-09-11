@@ -1,1 +1,26 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ANTENEH AI STUDIO</title></head><body style="margin:0;background:#050a12;color:#fff;font:16px system-ui;padding:32px"><p>Opening ANTENEH AI STUDIO…</p><script>location.replace('./visual-studio.html')</script></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ANTENEH AI STUDIO</title></head><body style="margin:0;background:#050a12;color:#fff;font:16px system-ui;padding:32px"><p>Opening ANTENEH AI STUDIO…</p><script>
+(async()=>{
+  try{
+    const r=await fetch('./visual-studio.html?fix='+Date.now(),{cache:'no-store'});
+    let html=await r.text();
+    html=html.replace(/function splitLesson\(t\)\{[\s\S]*?\n?function classify/,`function splitLesson(t){
+  const raw=String(t||'').trim();
+  let p=raw.split(/\n+|[.!?]+\s*/).map(s=>s.trim()).filter(Boolean);
+  if(p.length<3){
+    const b=raw.replace(/[?.!]$/,'');
+    p=[
+      \`What is \${b}?\`,
+      \`How does \${b} work?\`,
+      \`What are the main ideas of \${b}?\`,
+      \`Why does \${b} matter?\`,
+      \`An example of \${b}.\`,
+      \`Key takeaway: \${b}.\`
+    ];
+  }
+  return p;
+}
+function classify`);
+    document.open();document.write(html);document.close();
+  }catch(e){document.body.innerHTML='<p style="font:16px system-ui">ANTENEH AI STUDIO could not load. Please refresh.</p>';}
+})();
+</script></body></html>
