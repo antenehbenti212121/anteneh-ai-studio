@@ -3,6 +3,7 @@
   const KEY = 'anteneh-ai-studio-project-v3';
   const LEGACY = 'anteneh-ai-studio-project-v2';
   const clean = v => String(v ?? '').replace(/\s+/g, ' ').trim();
+  const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
 
   const normalizeScene = (s, i) => ({
     id: s?.id || `scene-${Date.now()}-${i}`,
@@ -22,6 +23,14 @@
     length: clean(p?.length) || '60 sec',
     style: clean(p?.style) || 'Clean explainer',
     mode: clean(p?.mode) || 'Explainer',
+    learning: {
+      objective: clean(p?.learning?.objective),
+      keyTerms: Array.isArray(p?.learning?.keyTerms) ? p.learning.keyTerms.map(clean).filter(Boolean).slice(0, 12) : [],
+      examples: Array.isArray(p?.learning?.examples) ? p.learning.examples.map(clean).filter(Boolean).slice(0, 6) : [],
+      misconception: clean(p?.learning?.misconception),
+      recap: clean(p?.learning?.recap),
+      check: clean(p?.learning?.check)
+    },
     scenes: Array.isArray(p?.scenes) ? p.scenes.map(normalizeScene) : [],
     narration: { recorded: !!p?.narration?.recorded },
     updatedAt: new Date().toISOString()
@@ -31,26 +40,22 @@
   const listeners = new Set();
 
   function emit(reason) {
-    const snapshot = structuredClone ? structuredClone(state) : JSON.parse(JSON.stringify(state));
+    const snapshot = clone(state);
     listeners.forEach(fn => { try { fn(snapshot, reason); } catch (_) {} });
     window.dispatchEvent(new CustomEvent('anteneh:statechange', { detail: { state: snapshot, reason } }));
   }
-
   function setProject(partial, reason='update') {
-    state = normalize({ ...state, ...partial, scenes: partial.scenes ?? state.scenes });
-    emit(reason);
-    return state;
+    state = normalize({ ...state, ...partial, scenes: partial.scenes ?? state.scenes, learning: partial.learning ?? state.learning, narration: partial.narration ?? state.narration });
+    emit(reason); return state;
   }
   function setScenes(scenes, reason='scenes') { return setProject({ scenes }, reason); }
   function getProject() { return state; }
   function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
-
   function save() {
     state.updatedAt = new Date().toISOString();
     localStorage.setItem(KEY, JSON.stringify(state));
     localStorage.setItem(LEGACY, JSON.stringify(state));
-    emit('save');
-    return true;
+    emit('save'); return true;
   }
   function load() {
     try {
@@ -58,9 +63,7 @@
       if (!raw) return false;
       const parsed = JSON.parse(raw);
       if (!parsed || !Array.isArray(parsed.scenes)) return false;
-      state = normalize(parsed);
-      emit('load');
-      return true;
+      state = normalize(parsed); emit('load'); return true;
     } catch (_) { return false; }
   }
   function clear() {
