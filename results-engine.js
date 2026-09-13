@@ -1,0 +1,11 @@
+/* ANTENEH RESEARCH HUB — traceable Results layer */
+(()=>{
+ const R=()=>JSON.parse(localStorage.getItem('arlab')||'{}'),W=x=>localStorage.setItem('arlab',JSON.stringify(x));
+ const E=x=>String(x??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+ function csv(){const s=R(),d=s.dataset;if(!d?.headers||!d?.data){return '<div class="card"><h4>Results</h4><p>Import a CSV dataset first.</p></div>'}
+  const nums=(d.dataDictionary||[]).filter(x=>x.numeric).map(x=>x.name);
+  return '<div class="card"><h4>Traceable Results Workspace</h4><p>Results are generated only from the imported dataset. No values are invented.</p><div class="notice">Dataset: '+E(d.name)+' · '+d.rows+' rows · '+d.columns+' columns</div><label>Numeric variable<select id="rv">'+nums.map(x=>'<option>'+E(x)+'</option>').join('')+'</select></label><button class="btn primary" id="rg">Generate descriptive result</button><div id="ro" style="margin-top:12px"></div></div>';
+ }
+ function render(){const c=document.getElementById('content');if(!c)return;c.insertAdjacentHTML('afterbegin',csv());const b=document.getElementById('rg');if(!b)return;b.onclick=()=>{const s=R(),d=s.dataset,h=d.headers,idx=h.indexOf(document.getElementById('rv').value),v=d.data.map(r=>Number(r[idx])).filter(Number.isFinite),n=v.length;if(!n)return;const mean=v.reduce((a,x)=>a+x,0)/n,sd=n>1?Math.sqrt(v.reduce((a,x)=>a+(x-mean)**2,0)/(n-1)):0,min=Math.min(...v),max=Math.max(...v);const result={variable:h[idx],n,mean,sd,min,max,generatedAt:new Date().toISOString(),dataset:d.name,source:'browser descriptive calculation'};s.results=s.results||[];s.results.push(result);W(s);document.getElementById('ro').innerHTML='<h4>Descriptive result</h4><table><tr><th>Variable</th><th>N</th><th>Mean</th><th>SD</th><th>Min</th><th>Max</th></tr><tr><td>'+E(result.variable)+'</td><td>'+n+'</td><td>'+mean.toFixed(4)+'</td><td>'+sd.toFixed(4)+'</td><td>'+min+'</td><td>'+max+'</td></tr></table><p><b>Trace:</b> '+E(d.name)+' → '+E(result.variable)+' → browser calculation → '+result.generatedAt+'</p>';};}
+ window.ResultsEngine={enhance:i=>{if(i===14||i===15)render()}};
+})();
