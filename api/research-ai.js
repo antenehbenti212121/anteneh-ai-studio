@@ -10,12 +10,12 @@ export default async function handler(req, res) {
     const r = await fetch('https://api.openai.com/v1/responses', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
-      body:JSON.stringify({model:process.env.RESEARCH_AI_MODEL || 'gpt-5-mini',input:prompt})
+      body:JSON.stringify({model:process.env.RESEARCH_AI_MODEL || 'gpt-5.6-luna',input:prompt})
     });
     const data = await r.json();
     if (!r.ok) return res.status(r.status).json({ok:false,error:data?.error?.message || 'AI provider request failed'});
     const text = Array.isArray(data.output) ? data.output.flatMap(x=>x.content||[]).map(x=>x.text||'').filter(Boolean).join('\n') : '';
-    return res.status(200).json({ok:true,model:process.env.RESEARCH_AI_MODEL || 'gpt-5-mini',text,provider:'OpenAI Responses API',generatedAt:new Date().toISOString()});
+    return res.status(200).json({ok:true,model:process.env.RESEARCH_AI_MODEL || 'gpt-5.6-luna',text,provider:'OpenAI Responses API',generatedAt:new Date().toISOString()});
   } catch (e) {
     return res.status(500).json({ok:false,error:e?.message || 'Research AI request failed'});
   }
