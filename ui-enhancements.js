@@ -33,27 +33,23 @@
   @media(max-width:700px){.rh-shell{margin-bottom:10px}.rh-command{padding:13px;border-radius:15px}.rh-metrics{grid-template-columns:repeat(3,1fr)}.rh-metric{padding:8px}.rh-metric strong{font-size:17px}.rh-command p{font-size:12px}.rh-action{flex:1;min-width:110px}.rh-shell:before{right:8px;top:-7px;font-size:18px}}
   `;
   document.head.appendChild(style);
-
   const state=()=>JSON.parse(localStorage.getItem('arlab')||'{}');
-  const save=s=>localStorage.setItem('arlab',JSON.stringify(s));
   function injectShell(){
     if(document.getElementById('rhShell'))return;
-    const main=document.querySelector('.main');
-    if(!main)return;
+    const main=document.querySelector('.main'); if(!main)return;
     const shell=document.createElement('div');shell.id='rhShell';shell.className='rh-shell';
-    shell.innerHTML=`<div class="rh-command"><div class="eyebrow">RESEARCH CONTROL CENTER · ETHIOPIA</div><div class="rh-ethiopia-mark"><i></i><span>ANTENEH RESEARCH HUB · የምርምር ማዕከል</span></div><h3 id="rhTitle">Build evidence. Approve decisions. Analyze reproducibly.</h3><p id="rhSubtitle">Your workspace is local-first and evidence-driven. Critical scientific decisions stay under researcher control.</p><div class="rh-actions"><button class="rh-action primary" id="rhIntel">Run evidence intelligence</button><button class="rh-action" id="rhSave">Save workspace</button><button class="rh-action" id="rhExport">Export backup</button></div></div><div class="rh-metrics"><div class="rh-metric"><strong id="rhPct">5%</strong><span>Lifecycle</span></div><div class="rh-metric"><strong id="rhEvidence">0</strong><span>Evidence records</span></div><div class="rh-metric"><strong id="rhReady">0</strong><span>Approved gates</span></div></div>`;
-    const hero=document.querySelector('.hero');hero?.after(shell);
+    shell.innerHTML=`<div class="rh-command"><div class="eyebrow">RESEARCH CONTROL CENTER · ETHIOPIA</div><div class="rh-ethiopia-mark"><i></i><span>ANTENEH RESEARCH HUB · የምርምር ማዕከል</span></div><h3>Build evidence. Approve decisions. Analyze reproducibly.</h3><p id="rhSubtitle">Your workspace is local-first and evidence-driven. Critical scientific decisions stay under researcher control.</p><div class="rh-actions"><button class="rh-action primary" id="rhIntel">Run evidence intelligence</button><button class="rh-action" id="rhSave">Save workspace</button><button class="rh-action" id="rhExport">Export backup</button></div></div><div class="rh-metrics"><div class="rh-metric"><strong id="rhPct">5%</strong><span>Lifecycle</span></div><div class="rh-metric"><strong id="rhEvidence">0</strong><span>Evidence records</span></div><div class="rh-metric"><strong id="rhReady">0</strong><span>Approved gates</span></div></div>`;
+    document.querySelector('.hero')?.after(shell);
     document.getElementById('rhIntel').onclick=()=>document.getElementById('blueprint')?.click();
     document.getElementById('rhSave').onclick=()=>document.getElementById('save')?.click();
     document.getElementById('rhExport').onclick=()=>{const blob=new Blob([JSON.stringify(state(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='anteneh-research-hub-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)};
   }
   function update(){
-    const s=state(),total=22,current=Math.min(total,Number(s.current||0)+1),pct=Math.round(current/total*100);
-    const e=Array.isArray(s.evidence)?s.evidence.length:0;
+    const s=state(),total=22,current=Math.min(total,Number(s.current||0)+1),pct=Math.round(current/total*100),e=Array.isArray(s.evidence)?s.evidence.length:0;
     let ready=0;if(s.methodology?.approved)ready++;if(s.analysisPlan?.approved)ready++;if(s.qualityControl?.approved)ready++;
     const p=document.getElementById('rhPct'),ev=document.getElementById('rhEvidence'),r=document.getElementById('rhReady');if(p)p.textContent=pct+'%';if(ev)ev.textContent=e;if(r)r.textContent=ready;
     document.querySelectorAll('.card h4').forEach(h=>{if(h.textContent.trim()==='Research director'){h.parentElement.classList.add('rh-director');h.innerHTML='<span class="rh-dot"></span>Research director';}});
-    const title=document.getElementById('stageTitle');const sub=document.getElementById('rhSubtitle');if(title&&sub)sub.textContent='Current stage: '+title.textContent.replace(/^\d+\s·\s/,'')+' · Evidence and approved decisions remain traceable.';
+    const title=document.getElementById('stageTitle'),sub=document.getElementById('rhSubtitle');if(title&&sub)sub.textContent='Current stage: '+title.textContent.replace(/^\d+\s·\s/,'')+' · Evidence and approved decisions remain traceable.';
   }
   function boot(){injectShell();update();setTimeout(update,700);setInterval(update,2500)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
