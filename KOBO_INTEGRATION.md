@@ -19,6 +19,8 @@ The UI should request only the Kobo project asset UID. It must never request the
 
 Use the project asset UID with the KPI v2 data endpoint. Follow the API response `next` link until it is null so projects with more than one page of submissions are completely retrieved.
 
+KoboToolbox's current documentation states that KPI v1 endpoints have been removed and that v2 uses the `Authorization: Token ...` header. The submission endpoint is `/api/v2/assets/{asset_uid}/data/`, and paginated responses must be followed through `next`.
+
 ## Normalized dataset
 
 The adapter must produce the existing Research Hub shape:
@@ -33,6 +35,12 @@ The adapter must produce the existing Research Hub shape:
 - `importedAt`
 
 It must also preserve provenance including source, asset UID, fetched timestamp, and record count.
+
+## Alternative ingestion path
+
+For deployments where authenticated API configuration is not yet available, KoboToolbox synchronous exports may be used as a controlled bridge into the existing CSV ingestion path. This must only be used when the Kobo project is intentionally configured for the required external access. Sensitive/private projects must not be made public merely to enable an integration.
+
+KoboToolbox also supports REST Services that can send newly created records to an external server. This is a possible future push-based adapter, with retry behavior handled by KoboToolbox. It does not replace the KPI v2 pull adapter for full historical synchronization.
 
 ## Safety gates
 
