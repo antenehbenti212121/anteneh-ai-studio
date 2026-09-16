@@ -1,0 +1,20 @@
+/* ANTENEH RESEARCH HUB — data quality and analysis readiness gate */
+(()=>{
+ const R=()=>JSON.parse(localStorage.getItem('arlab')||'{}'),W=x=>localStorage.setItem('arlab',JSON.stringify(x));
+ const E=x=>String(x??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+ const add=h=>{const c=document.getElementById('content');if(c&&!document.getElementById('dq-runtime'))c.insertAdjacentHTML('afterbegin',h)};
+ const numeric=x=>x!==''&&x!=null&&Number.isFinite(Number(x));
+ const inspect=ds=>{
+  const h=Array.isArray(ds?.headers)?ds.headers:[], rows=Array.isArray(ds?.data)?ds.data:[], issues=[], warnings=[], stats=[];
+  if(!h.length) issues.push('No dataset columns found.');
+  if(!rows.length) issues.push('No records found.');
+  const seen=new Set();h.forEach((name,j)=>{const n=String(name||'').trim();if(!n)issues.push(`Column ${j+1} has no name.`);const key=n.toLowerCase();if(seen.has(key))issues.push(`Duplicate column name: ${n}`);seen.add(key);const vals=rows.map(r=>String(r?.[j]??'').trim()),present=vals.filter(Boolean),nums=present.filter(numeric);const miss=rows.length-present.length;const uniq=new Set(present).size;stats.push({name:n,missing:miss,missingPct:rows.length?Math.round(miss/rows.length*1000)/10:0,unique:uniq,numeric:present.length>0&&nums.length===present.length});if(rows.length&&miss/rows.length>.2)warnings.push(`${n}: ${Math.round(miss/rows.length*100)}% missing.`)});
+  rows.forEach((r,i)=>{if(!Array.isArray(r)||r.length!==h.length)issues.push(`Record ${i+1} has ${Array.isArray(r)?r.length:0} values; expected ${h.length}.`)});
+  const key=h.findIndex(x=>['_id','_uuid','rootUuid','instanceID'].includes(String(x)));if(key>=0){const ids=rows.map(r=>String(r[key]??'').trim()).filter(Boolean);const dup=ids.length-new Set(ids).size;if(dup)warnings.push(`${dup} duplicate identifiers detected in ${h[key]}.`)}
+  return {issues,warnings,stats,rows:rows.length,columns:h.length}
+ };
+ function render(stage){if(stage!==12&&stage!==13)return;const s=R(),ds=s.dataset;if(!ds)return;add(`<div class="card" id="dq-runtime"><h4>🧪 Data Quality & Analysis Readiness</h4><p>Automated structural checks run before statistical execution. Findings are evidence about the dataset—not invented corrections.</p><div id="dqSummary" class="paper"></div><div id="dqIssues" class="notice"></div><div class="actions"><button class="btn primary" id="dqApprove">Mark quality review complete</button><button class="btn" id="dqRefresh">Re-run checks</button></div></div>`);const run=()=>{const q=inspect(ds);s.dataQuality={...q,checkedAt:new Date().toISOString()};W(s);document.getElementById('dqSummary').innerHTML=`<b>${q.rows.toLocaleString()} records · ${q.columns} columns</b><br>${q.stats.slice(0,12).map(x=>`${E(x.name)} — missing ${x.missingPct}% · ${x.unique} unique · ${x.numeric?'numeric-like':'categorical/text'}`).join('<br>')}${q.stats.length>12?`<br><span class="muted">+ ${q.stats.length-12} more columns</span>`:''}`;document.getElementById('dqIssues').innerHTML=q.issues.length?`<b>Blocking issues</b><br>${q.issues.map(E).join('<br>')}`:(q.warnings.length?`<b>Warnings for researcher review</b><br>${q.warnings.map(E).join('<br>')}`:'✓ No structural blocking issues detected. Review substantive validity before analysis.');document.getElementById('dqApprove').disabled=!!q.issues.length;document.getElementById('dqApprove').textContent=s.dataQualityApproved?'✓ Quality review completed':'Mark quality review complete'};document.getElementById('dqRefresh').onclick=run;document.getElementById('dqApprove').onclick=()=>{s.dataQualityApproved=true;s.dataQualityApprovedAt=new Date().toISOString();W(s);run()};run()}
+ window.DataQualityRuntime={render,inspect};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>render(Number(R().current||0)));else render(Number(R().current||0));
+ setInterval(()=>render(Number(R().current||0)),1800);
+})();
