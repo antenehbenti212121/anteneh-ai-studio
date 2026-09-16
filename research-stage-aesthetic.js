@@ -20,6 +20,6 @@
   const apply=()=>{const main=document.querySelector('.main');if(main)main.dataset.stage=String(Number(JSON.parse(localStorage.getItem('arlab')||'{}').current||0))};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
   setInterval(apply,900);
-  const load=()=>{if(window.__stageWorkspaceLoaded)return;window.__stageWorkspaceLoaded=true;const s=document.createElement('script');s.src='/stage-workspace.js';document.head.appendChild(s)};
+  const load=()=>{if(window.__stageWorkspaceLoaded)return;window.__stageWorkspaceLoaded=true;const s=document.createElement('script');s.src='/stage-workspace.js';document.head.appendChild(s);const d=document.createElement('script');d.src='/research-decision-record.js';d.onload=()=>window.ResearchDecisionRecord?.render?.();document.head.appendChild(d)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
 })();
