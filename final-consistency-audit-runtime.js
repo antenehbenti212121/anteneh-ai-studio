@@ -5,15 +5,15 @@
  const esc=x=>String(x??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
  const hash=x=>{let h=2166136261;for(const c of String(x))h=Math.imul(h^c.charCodeAt(0),16777619);return (h>>>0).toString(16)};
  const present=x=>x!==undefined&&x!==null&&String(x).trim()!=='';
- const get=(s,paths)=>{for(const p of paths){let v=s;for(const k of p.split('.'))v=v?.[k];if(present(v))return v}return ''};
+ const journalReqStatus=p=>{const r=p.journalRequirementsVerification||{};if(!r.sourceUrl)return'missing';const items=Object.values(r.items||{});if(!items.length)return'unverified';if(items.some(x=>x.status==='missing'))return'missing';if(items.some(x=>x.status==='unverified'))return'unverified';return'verified'};
  const audit=s=>{
-  const p=s.publicationPackage||{}, m=s.manuscript||{}, ar=s.analysisReadiness||{}, ap=s.analysisPlan||{}, r=s.results||{}, lit=s.literatureSynthesis||{}, d=s.discussion||{}, c=s.conclusion||{}, refs=s.referenceLibrary||[];
+  const p=s.publicationPackage||{}, m=s.manuscript||{}, ap=s.analysisPlan||{}, r=s.results||{}, lit=s.literatureSynthesis||{}, d=s.discussion||{}, c=s.conclusion||{}, refs=s.referenceLibrary||[];
   const items=[];
   const add=(label,status,detail)=>items.push({label,status,detail});
   add('Research title ↔ manuscript title',present(s.title)&&present(m.title)?(String(s.title).trim()===String(m.title).trim()?'aligned':'review'): 'missing');
   add('Objectives ↔ research questions',present(s.objectives||s.objective)?'present':'missing','Check semantic alignment manually; this audit does not invent equivalence.');
   add('Objectives ↔ methodology',present(s.objectives||s.objective)&&present(s.methodology||s.design)?'present':'missing','Verify every primary objective has an appropriate method.');
-  add('Sampling ↔ analysis plan',present(sampling=s.sampling)&&present(ap)?'present':'missing','Verify sample design, unit of analysis and planned tests agree.');
+  add('Sampling ↔ analysis plan',present(s.sampling)&&present(ap)?'present':'missing','Verify sample design, unit of analysis and planned tests agree.');
   add('Analysis plan ↔ results trace',present(ap)&&present(r)?'present':'missing','Results should only contain analyses released by the approved plan.');
   add('Results ↔ discussion',present(r)&&present(d)?'present':'missing','Discussion should interpret reported results without introducing new untraceable statistics.');
   add('Discussion ↔ conclusion',present(d)&&present(c)?'present':'missing','Conclusions should remain within the evidence reported.');
@@ -22,6 +22,7 @@
   add('Reference audit approval',s.referenceAuditApproved===true||s.referenceAuditApproved==='verified'?'verified':'missing','Required before final publication approval.');
   add('Academic QC approval',s.academicQCApproved===true||s.academicQcApproved===true?'verified':'missing','Required before final publication approval.');
   add('Manuscript readiness approval',s.manuscriptReadinessApproved===true?'verified':'missing','Required before final publication approval.');
+  add('Journal requirements verification',journalReqStatus(p),'Current official Instructions for Authors must be checked; assumptions never count as verified.');
   add('Submission checklist mapping',p.submissionChecklistMapping?'verified':p.reportingGuideline?'unverified':'missing','Page/section locations must be supplied from the actual manuscript, not guessed.');
   const blockers=items.filter(x=>['missing'].includes(x.status));
   const reviews=items.filter(x=>x.status==='review');
