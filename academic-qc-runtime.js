@@ -1,0 +1,17 @@
+/* ANTENEH RESEARCH HUB — academic quality-control gate */
+(()=>{
+ const read=()=>JSON.parse(localStorage.getItem('arlab')||'{}');
+ const write=s=>localStorage.setItem('arlab',JSON.stringify(s));
+ const hash=x=>{let h=2166136261;for(const c of String(x))h=Math.imul(h^c.charCodeAt(0),16777619);return (h>>>0).toString(16)};
+ const esc=x=>String(x??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+ const render=stage=>{if(Number(stage)!==19)return;const root=document.getElementById('content');if(!root)return;document.getElementById('academicQCRuntime')?.remove();const s=read();const checks=[
+  ['Analysis plan approved',!!(s.analysisPlanApproved||s.analysisPlan?.approved)],
+  ['Data-quality review approved',!!s.dataQualityApproved],
+  ['Analysis dataset approved',!!s.analysisReadinessApproved],
+  ['Results traceability records present',Array.isArray(s.resultsTrace)&&s.resultsTrace.length>0],
+  ['Discussion interpretation approved',!!s.discussionApproved],
+  ['Reference audit approved',!!s.referenceAuditApproved],
+  ['Conclusion approved',!!s.conclusionApproved],
+  ['Literature synthesis present',Array.isArray(s.literatureSynthesis?.entries)&&s.literatureSynthesis.entries.length>0]
+ ];
+ const box=document.createElement('div');box.id='academicQCRuntime';box.className='card';box.innerHTML=`<h4>Academic quality-control gate</h4><p>This is a completeness and traceability review, not a guarantee of scientific validity or publication acceptance. Reporting guidance should be selected for the actual study design. <a href="https://www.equator-network.org/toolkits/selecting-the-appropriate-reporting-guideline/" target="_blank" rel="noopener">Check appropriate reporting guideline</a></p><div id="qcChecks"></div><label>Researcher QC notes</label><textarea id="qcNotes" placeholder="Record unresolved issues, justified exceptions, reviewer concerns, or decisions made by the researcher."></textarea><div class="actions"><button class="btn primary" id="qcRun">Run QC check</button><button class="btn" id="qcApprove">Approve academic QC</button></div><div id="qcSummary"></div>`;root.prepend(box);const draw=()=>{document.getElementById('qcChecks').innerHTML=checks.map(([n,v])=>`<div class="paper"><b>${v?'✓':'⚠'} ${esc(n)}</b></div>`).join('');const failed=checks.filter(x=>!x[1]).length;document.getElementById('qcSummary').innerHTML=`<div class="paper"><b>${failed?'QC not yet releasable':'All configured QC gates passed'}</b><br>${failed} gate(s) require attention.</div>`};document.getElementById('qcRun').onclick=()=>{const x=read();x.academicQC={checks:Object.fromEntries(checks.map(([n,v])=>[n,v])),checkedAt:new Date().toISOString(),fingerprint:hash(JSON.stringify(checks))};x.academicQCApproved=false;write(x);draw()};document.getElementById('qcApprove').onclick=()=>{const x=read(),failed=checks.filter(a=>!a[1]);if(failed.length){alert('Resolve all required QC gates before approval.');return}x.academicQCApproved=true;x.academicQCApprovedAt=new Date().toISOString();x.academicQCFingerprint=hash(JSON.stringify({checks:x.academicQC?.checks||Object.fromEntries(checks),notes:qcNotes.value.trim()}));write(x);alert('Academic QC approved and fingerprint saved.');draw()};draw()};window.AcademicQCRuntime={render};})();
