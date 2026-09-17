@@ -23,6 +23,8 @@
   };
   const loadFreshUI=()=>{
     if(window.__researchPremiumUIRefresh)return;
+    const premiumAlreadyApplied=(()=>{try{return !!getComputedStyle(document.documentElement).getPropertyValue('--et-green').trim()}catch(e){return false}})();
+    if(premiumAlreadyApplied){window.__researchPremiumUIRefresh=true;window.__researchPremiumUIReady=true;return}
     window.__researchPremiumUIRefresh=true;
     const s=document.createElement('script');
     s.src='/ui-enhancements.js?rh='+Date.now();
