@@ -1,15 +1,15 @@
 (()=>{
-  if(!document.getElementById('aiFab')){
+  const loadOnce=(src,key)=>{
+    if(window[key]||document.querySelector(`script[data-rh-runtime="${src}"]`))return;
     const s=document.createElement('script');
-    s.src='/research-assistant.js';
+    s.src=src;
+    s.dataset.rhRuntime=src;
+    s.async=false;
     document.body.appendChild(s);
-  }
-  if(!window.__researchStageAestheticLoaded){
-    window.__researchStageAestheticLoaded=true;
-    const s=document.createElement('script');
-    s.src='/research-stage-aesthetic.js';
-    document.body.appendChild(s);
-  }
+    window[key]=true;
+  };
+  loadOnce('/research-assistant.js','__researchAssistantLoaded');
+  loadOnce('/research-stage-aesthetic.js','__researchStageAestheticLoaded');
   const relabel=()=>{
     document.querySelectorAll('.stage[data-i="21"]').forEach(b=>{
       const small=b.querySelector('small');
@@ -18,6 +18,7 @@
     });
     document.querySelectorAll('.mobile button[data-i="21"]').forEach(b=>{b.innerHTML='22<br>Journal';});
   };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',relabel);else relabel();
+  const boot=()=>{relabel();setTimeout(relabel,150);setTimeout(relabel,600);};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   new MutationObserver(relabel).observe(document.body,{childList:true,subtree:true});
 })();
