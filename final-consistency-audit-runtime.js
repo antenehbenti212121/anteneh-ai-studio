@@ -5,7 +5,7 @@
  const esc=x=>String(x??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
  const hash=x=>{let h=2166136261;for(const c of String(x))h=Math.imul(h^c.charCodeAt(0),16777619);return (h>>>0).toString(16)};
  const present=x=>x!==undefined&&x!==null&&String(x).trim()!=='';
- const journalReqStatus=p=>{const r=p.journalRequirementsVerification||{};if(!r.sourceUrl)return'missing';const items=Object.values(r.items||{});if(!items.length)return'unverified';if(items.some(x=>x.status==='missing'))return'missing';if(items.some(x=>x.status==='unverified'))return'unverified';return'verified'};
+ const journalReqStatus=p=>{const r=p.journalRequirementsVerification||{};if(!r.sourceUrl||!r.journal||p.journal!==r.journal)return'missing';const items=Object.values(r.items||{});if(!items.length)return'unverified';const payload={journal:r.journal,sourceUrl:r.sourceUrl,sourceTitle:r.sourceTitle||'',verifiedOn:r.verifiedOn||'',sourceNotes:r.sourceNotes||'',items:r.items};if(hash(JSON.stringify(payload))!==r.fingerprint)return'unverified';if(items.some(x=>x.status==='missing'))return'missing';if(items.some(x=>x.status==='unverified'))return'unverified';return'verified'};
  const audit=s=>{
   const p=s.publicationPackage||{}, m=s.manuscript||{}, ap=s.analysisPlan||{}, r=s.results||{}, lit=s.literatureSynthesis||{}, d=s.discussion||{}, c=s.conclusion||{}, refs=s.referenceLibrary||[];
   const items=[];
@@ -22,8 +22,10 @@
   add('Reference audit approval',s.referenceAuditApproved===true||s.referenceAuditApproved==='verified'?'verified':'missing','Required before final publication approval.');
   add('Academic QC approval',s.academicQCApproved===true||s.academicQcApproved===true?'verified':'missing','Required before final publication approval.');
   add('Manuscript readiness approval',s.manuscriptReadinessApproved===true?'verified':'missing','Required before final publication approval.');
-  add('Journal requirements verification',journalReqStatus(p),'Current official Instructions for Authors must be checked; assumptions never count as verified.');
-  add('Submission checklist mapping',p.submissionChecklistMapping?'verified':p.reportingGuideline?'unverified':'missing','Page/section locations must be supplied from the actual manuscript, not guessed.');
+  const jrs=journalReqStatus(p);add('Journal requirements verification',jrs,'Current official Instructions for Authors must be checked; assumptions never count as verified.');
+  const jrv=p.journalRequirementsVerification||{};add('Journal requirements fingerprint integrity',jrs==='verified'&&present(jrv.fingerprint)?'verified':jrs==='missing'?'missing':'unverified','The stored fingerprint must match the saved verification record.');
+  const scm=p.submissionChecklistMapping;add('Submission checklist mapping',scm?(scm.items?.length?'verified':'unverified'):p.reportingGuideline?'unverified':'missing','Page/section locations must be supplied from the actual manuscript, not guessed.');
+  const manifest=p.submissionManifest;add('Submission manifest ↔ journal requirements',manifest&&manifest.journalRequirementsFingerprint&&manifest.journalRequirementsFingerprint===jrv.fingerprint?'verified':manifest?'unverified':'missing','The saved manifest must carry the same journal-requirements fingerprint as the current verification record.');
   const blockers=items.filter(x=>['missing'].includes(x.status));
   const reviews=items.filter(x=>x.status==='review');
   const unverified=items.filter(x=>x.status==='unverified');
