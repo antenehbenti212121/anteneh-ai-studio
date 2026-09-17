@@ -4,6 +4,12 @@
     s.src='/research-assistant.js';
     document.body.appendChild(s);
   }
+  if(!window.__researchStageAestheticLoaded){
+    window.__researchStageAestheticLoaded=true;
+    const s=document.createElement('script');
+    s.src='/research-stage-aesthetic.js';
+    document.body.appendChild(s);
+  }
   const relabel=()=>{
     document.querySelectorAll('.stage[data-i="21"]').forEach(b=>{
       const small=b.querySelector('small');
