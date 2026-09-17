@@ -6,7 +6,7 @@
     if(existing){window.__researchStageAestheticLoading=true;return}
     window.__researchStageAestheticLoading=true;
     const s=document.createElement('script');
-    s.src=src+'?rh='+Date.now();
+    s.src=src;
     s.dataset.rhRuntime=src;
     s.async=false;
     s.onload=()=>{window.__researchStageAestheticReady=true;window.__researchStageAestheticLoading=false};
@@ -16,7 +16,7 @@
   const loadAssistant=()=>{
     if(window.__researchAssistantLoaded||window.ResearchAssistant)return;
     const s=document.createElement('script');
-    s.src='/research-assistant.js?rh='+Date.now();
+    s.src='/research-assistant.js';
     s.async=false;
     s.onload=()=>window.__researchAssistantLoaded=true;
     document.head.appendChild(s);
@@ -27,7 +27,7 @@
     if(premiumAlreadyApplied){window.__researchPremiumUIRefresh=true;window.__researchPremiumUIReady=true;return}
     window.__researchPremiumUIRefresh=true;
     const s=document.createElement('script');
-    s.src='/ui-enhancements.js?rh='+Date.now();
+    s.src='/ui-enhancements.js';
     s.async=true;
     s.onload=()=>{window.__researchPremiumUIReady=true};
     s.onerror=()=>{window.__researchPremiumUIRefresh=false};
