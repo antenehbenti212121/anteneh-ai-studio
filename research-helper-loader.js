@@ -21,6 +21,16 @@
     s.onload=()=>window.__researchAssistantLoaded=true;
     document.head.appendChild(s);
   };
+  const loadFreshUI=()=>{
+    if(window.__researchPremiumUIRefresh)return;
+    window.__researchPremiumUIRefresh=true;
+    const s=document.createElement('script');
+    s.src='/ui-enhancements.js?rh='+Date.now();
+    s.async=true;
+    s.onload=()=>{window.__researchPremiumUIReady=true};
+    s.onerror=()=>{window.__researchPremiumUIRefresh=false};
+    document.head.appendChild(s);
+  };
   const relabel=()=>{
     document.querySelectorAll('.stage[data-i="21"]').forEach(b=>{
       const small=b.querySelector('small');
@@ -29,7 +39,7 @@
     });
     document.querySelectorAll('.mobile button[data-i="21"]').forEach(b=>{b.innerHTML='22<br>Journal';});
   };
-  const bootUI=()=>{loadAssistant();boot();relabel();setTimeout(relabel,150);setTimeout(relabel,600);};
+  const bootUI=()=>{loadAssistant();boot();relabel();setTimeout(loadFreshUI,0);setTimeout(relabel,150);setTimeout(relabel,600);};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootUI);else bootUI();
   new MutationObserver(relabel).observe(document.body,{childList:true,subtree:true});
 })();
