@@ -1,15 +1,26 @@
 (()=>{
-  const loadOnce=(src,key)=>{
-    if(window[key]||document.querySelector(`script[data-rh-runtime="${src}"]`))return;
+  const src='/research-stage-aesthetic.js';
+  const boot=()=>{
+    if(window.__researchStageAestheticReady||window.__researchStageAestheticLoading)return;
+    const existing=document.querySelector('script[data-rh-runtime="'+src+'"]');
+    if(existing){window.__researchStageAestheticLoading=true;return}
+    window.__researchStageAestheticLoading=true;
     const s=document.createElement('script');
-    s.src=src;
+    s.src=src+'?rh='+Date.now();
     s.dataset.rhRuntime=src;
     s.async=false;
-    document.body.appendChild(s);
-    window[key]=true;
+    s.onload=()=>{window.__researchStageAestheticReady=true;window.__researchStageAestheticLoading=false};
+    s.onerror=()=>{window.__researchStageAestheticLoading=false;s.remove();setTimeout(boot,1000)};
+    document.head.appendChild(s);
   };
-  loadOnce('/research-assistant.js','__researchAssistantLoaded');
-  loadOnce('/research-stage-aesthetic.js','__researchStageAestheticLoaded');
+  const loadAssistant=()=>{
+    if(window.__researchAssistantLoaded||window.ResearchAssistant)return;
+    const s=document.createElement('script');
+    s.src='/research-assistant.js?rh='+Date.now();
+    s.async=false;
+    s.onload=()=>window.__researchAssistantLoaded=true;
+    document.head.appendChild(s);
+  };
   const relabel=()=>{
     document.querySelectorAll('.stage[data-i="21"]').forEach(b=>{
       const small=b.querySelector('small');
@@ -18,7 +29,7 @@
     });
     document.querySelectorAll('.mobile button[data-i="21"]').forEach(b=>{b.innerHTML='22<br>Journal';});
   };
-  const boot=()=>{relabel();setTimeout(relabel,150);setTimeout(relabel,600);};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  const bootUI=()=>{loadAssistant();boot();relabel();setTimeout(relabel,150);setTimeout(relabel,600);};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootUI);else bootUI();
   new MutationObserver(relabel).observe(document.body,{childList:true,subtree:true});
 })();
