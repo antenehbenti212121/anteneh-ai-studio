@@ -4,10 +4,12 @@
  const write=s=>localStorage.setItem('arlab',JSON.stringify(s));
  const esc=x=>String(x??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
  const hash=x=>{let h=2166136261;for(const c of String(x))h=Math.imul(h^c.charCodeAt(0),16777619);return (h>>>0).toString(16)};
+ const checklistHash=x=>{let h=2166136261;const s=String(x);for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
  const present=x=>x!==undefined&&x!==null&&String(x).trim()!=='';
  const journalReqStatus=p=>{const r=p.journalRequirementsVerification||{};if(!r.sourceUrl||!r.journal||p.journal!==r.journal)return'missing';const items=Object.values(r.items||{});if(!items.length)return'unverified';const payload={journal:r.journal,sourceUrl:r.sourceUrl,sourceTitle:r.sourceTitle||'',verifiedOn:r.verifiedOn||'',sourceNotes:r.sourceNotes||'',items:r.items};if(hash(JSON.stringify(payload))!==r.fingerprint)return'unverified';if(items.some(x=>x.status==='missing'))return'missing';if(items.some(x=>x.status==='unverified'))return'unverified';return'verified'};
  const submissionPlanFingerprint=p=>{if(!p||!p.journal||!p.articleType||!p.authors||!p.journalRequirementsVerification?.fingerprint||!p.submissionPlanSavedAt||!p.submissionPlanFingerprint)return'';return hash(JSON.stringify({journal:p.journal,articleType:p.articleType,authors:p.authors,journalRequirementsFingerprint:p.journalRequirementsVerification.fingerprint,coverLetterNotes:p.coverLetterNotes||''}))};
- const manifestFingerprint=(p,m)=>{if(!m)return'';const files=Array.isArray(m.files)?m.files:[];return hash(JSON.stringify({journal:p.journal,articleType:p.articleType,authors:p.authors||p.authorNames,submissionPlanFingerprint:m.submissionPlanFingerprint||'',journalRequirementsFingerprint:m.journalRequirementsFingerprint||'',files}))};
+ const checklistFingerprint=m=>m?checklistHash(JSON.stringify({guideline:m.guideline||'',sourceUrl:m.sourceUrl||'',items:Array.isArray(m.items)?m.items:[]})):'';
+ const manifestFingerprint=(p,m)=>{if(!m)return'';const files=Array.isArray(m.files)?m.files:[];return hash(JSON.stringify({journal:p.journal,articleType:p.articleType,authors:p.authors||p.authorNames,submissionPlanFingerprint:m.submissionPlanFingerprint||'',journalRequirementsFingerprint:m.journalRequirementsFingerprint||'',submissionChecklistMappingFingerprint:m.submissionChecklistMappingFingerprint||'',files}))};
  const audit=s=>{
   const p=s.publicationPackage||{}, m=s.manuscript||{}, ap=s.analysisPlan||{}, r=s.results||{}, lit=s.literatureSynthesis||{}, d=s.discussion||{}, c=s.conclusion||{}, refs=s.referenceLibrary||[];
   const items=[];
@@ -26,12 +28,18 @@
   add('Manuscript readiness approval',s.manuscriptReadinessApproved===true?'verified':'missing','Required before final publication approval.');
   const jrs=journalReqStatus(p);add('Journal requirements verification',jrs,'Current official Instructions for Authors must be checked; assumptions never count as verified.');
   const jrv=p.journalRequirementsVerification||{};add('Journal requirements fingerprint integrity',jrs==='verified'&&present(jrv.fingerprint)?'verified':jrs==='missing'?'missing':'unverified','The stored fingerprint must match the saved verification record.');
-  const scm=p.submissionChecklistMapping;add('Submission checklist mapping',scm?(scm.items?.length?'verified':'unverified'):p.reportingGuideline?'unverified':'missing','Page/section locations must be supplied from the actual manuscript, not guessed.');
+  const scm=p.submissionChecklistMapping;
+  const scmFp=checklistFingerprint(scm);
+  const scmStatuses=Array.isArray(scm?.items)?scm.items.map(x=>x.status):[];
+  const scmValid=!!scm?.guideline&&!!scm?.sourceUrl&&scmStatuses.length>0&&scmStatuses.every(x=>['addressed','not_applicable'].includes(x))&&scmFp===scm.fingerprint;
+  add('Submission checklist mapping',scmValid?'verified':scm?'unverified':p.reportingGuideline?'unverified':'missing','Requires a guideline, exact checklist source URL, at least one mapped item, only Addressed/N/A statuses, and an intact mapping fingerprint.');
+  add('Submission checklist mapping fingerprint integrity',scm?(scmFp&&scmFp===scm.fingerprint?'verified':'unverified'):'missing','The stored checklist mapping fingerprint must match its guideline, source URL and item inventory.');
   const planFp=submissionPlanFingerprint(p);add('Journal submission plan fingerprint integrity',planFp&&planFp===p.submissionPlanFingerprint?'verified':p.submissionPlanFingerprint?'unverified':'missing','The saved submission plan fingerprint must match its journal, article type, authors, cover-letter notes and journal-requirements fingerprint.');
   const manifest=p.submissionManifest;
   add('Submission manifest ↔ journal requirements',manifest&&manifest.journalRequirementsFingerprint&&manifest.journalRequirementsFingerprint===jrv.fingerprint?'verified':manifest?'unverified':'missing','The saved manifest must carry the same journal-requirements fingerprint as the current verification record.');
   add('Submission manifest ↔ submission plan',manifest&&manifest.submissionPlanFingerprint&&manifest.submissionPlanFingerprint===p.submissionPlanFingerprint?'verified':manifest?'unverified':'missing','The saved manifest must carry the same submission-plan fingerprint as the current submission plan.');
-  add('Submission manifest fingerprint integrity',manifest&&manifest.packageFingerprint&&manifest.packageFingerprint===manifestFingerprint(p,manifest)?'verified':manifest?'unverified':'missing','The saved package fingerprint must match its current file inventory, journal, authors, submission-plan fingerprint and journal-requirements fingerprint.');
+  add('Submission manifest ↔ checklist mapping',manifest&&manifest.submissionChecklistMappingFingerprint&&manifest.submissionChecklistMappingFingerprint===scmFp?'verified':manifest?'unverified':'missing','The saved manifest must carry the same checklist-mapping fingerprint as the current mapping record.');
+  add('Submission manifest fingerprint integrity',manifest&&manifest.packageFingerprint&&manifest.packageFingerprint===manifestFingerprint(p,manifest)?'verified':manifest?'unverified':'missing','The saved package fingerprint must match its current file inventory, journal, authors, submission-plan, checklist-mapping and journal-requirements fingerprints.');
   const blockers=items.filter(x=>['missing'].includes(x.status));
   const reviews=items.filter(x=>x.status==='review');
   const unverified=items.filter(x=>x.status==='unverified');
